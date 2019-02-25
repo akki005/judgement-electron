@@ -1,0 +1,60 @@
+<div class="col-md-12">
+  <!--   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#GameStartModal">
+    Start Game
+  </button> -->
+  <!--   <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#GameStartJoinModal">
+    Join Game
+  </button> -->
+
+  <button type="button" class="btn btn-primary" id="startGameBtn">
+    Start Game
+  </button>
+
+  <!-- Modal -->
+  <div class="modal fade" id="GameStartModal" tabindex="-1" role="dialog" aria-labelledby="GameStartModalTitle"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLongTitle">Game Details</h5>
+        </div>
+        <div class="modal-body">
+          <form>
+            <div class="form-group">
+              <label for="noOfPlayers">No of Players</label>
+              <input type="text" class="form-control" id="noOfPlayers" placeholder="total player count">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="closeStartedGame" data-dismiss="modal">Close</button>
+          <button type="button" id="noOfPlayersSubmit" class="btn btn-primary" data-dismiss="modal">Submit</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal fade" id="playersConnectModal" tabindex="-1" role="dialog" aria-labelledby="playersConnectModalTitle"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="">Players Details</h5>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="noOfPlayersConnected">No of Players Connected</label>
+            <input type="text" class="form-control" id="noOfPlayersConnected" placeholder="total player count" readonly>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="closeStartedGameAfterPlayerNumbers" data-dismiss="modal">Close</button>
+        <button type="button" id="startGameAfterPlayersJoined" class="btn btn-primary" data-dismiss="modal">Start</button>
+      </div>
+      <div id="serverIp"></div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
