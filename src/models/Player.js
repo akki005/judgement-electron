@@ -14,7 +14,8 @@ module.exports.init = (win) => {
 
 class Player {
 
-  constructor(name, position) {
+  constructor(name, position,id) {
+    this.id=id;
     this.name = name;
     this.no_of_hands_bet = 0;
     this.cards = [];

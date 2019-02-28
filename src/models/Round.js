@@ -16,6 +16,8 @@ const rl = readline.createInterface({
   output: process.stdout
 });
 
+
+
 class Round {
 
 
@@ -55,21 +57,27 @@ class Round {
   }
 
 
-  dealCards(Deck) {
-    let no_of_cards_distributed = 0;
-    leftShift(this.players, this.starting_turn_index);
-    while (this.no_of_cards_for_each_player != no_of_cards_distributed) {
+  async dealCards(Deck) {
+    try {
+      let no_of_cards_distributed = 0;
+      leftShift(this.players, this.starting_turn_index);
+      while (this.no_of_cards_for_each_player != no_of_cards_distributed) {
+        this.players.forEach((player) => {
+          let card = Deck.distributeCard();
+          player.addCard(card);
+          Deck.number_of_card_left--;
+        })
+        no_of_cards_distributed++;
+      }
+
       this.players.forEach((player) => {
-        let card = Deck.distributeCard();
-        player.addCard(card);
-        Deck.number_of_card_left--;
+        player.arrangeCards();
       })
-      no_of_cards_distributed++;
+      await updateUIAfterCardDistribution(this.players);
+    } catch (error) {
+      return Promise.reject(error);
     }
 
-    this.players.forEach((player) => {
-      player.arrangeCards();
-    })
   }
 
 
@@ -130,7 +138,7 @@ class Round {
 function askToPlaceBet(player_name) {
   return new Promise((resolve, reject) => {
     game_window.webContents.send("place-bet", player_name);
-    ipcMain.on("placed-bet",function(event,bet){
+    ipcMain.on("placed-bet", function (event, bet) {
       resolve(bet);
     })
   })
@@ -146,6 +154,33 @@ function leftShift(array, shifts) {
   }
   return array;
 }
+
+
+function updateUIAfterCardDistribution(players) {
+  return new Promise((resolve, reject) => {
+    $('#playersConnectModal').modal('hide');
+    $('#playersConnectModal').on('hidden.bs.modal', function (e) {
+      $("#main").load("./templates/playarea.html", function () {
+        let images_base = "./images/"
+        let html = '';
+        players.forEach((player) => {
+          html += `<h1> Player - ${player.name}</h1>`
+          player.cards.forEach((card, index) => {
+            html += `<img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
+          })
+        })
+        $("#playArea").html(html);
+        setTimeout(() => {
+          resolve();
+        }, 2000);
+      });
+
+    })
+  })
+
+}
+
+
 
 
 module.exports = {
