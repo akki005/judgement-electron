@@ -73,7 +73,7 @@ class Round {
       this.players.forEach((player) => {
         player.arrangeCards();
       })
-      await updateUIAfterCardDistribution(this.players);
+      // await updateUIAfterCardDistribution(this.players);
     } catch (error) {
       return Promise.reject(error);
     }
@@ -156,29 +156,7 @@ function leftShift(array, shifts) {
 }
 
 
-function updateUIAfterCardDistribution(players) {
-  return new Promise((resolve, reject) => {
-    $('#playersConnectModal').modal('hide');
-    $('#playersConnectModal').on('hidden.bs.modal', function (e) {
-      $("#main").load("./templates/playarea.html", function () {
-        let images_base = "./images/"
-        let html = '';
-        players.forEach((player) => {
-          html += `<h1> Player - ${player.name}</h1>`
-          player.cards.forEach((card, index) => {
-            html += `<img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
-          })
-        })
-        $("#playArea").html(html);
-        setTimeout(() => {
-          resolve();
-        }, 2000);
-      });
 
-    })
-  })
-
-}
 
 
 

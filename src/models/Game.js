@@ -25,8 +25,12 @@ class Game {
 
 
   constructor() {
+    this.player = undefined;
+    this.dealt_acknowledgement = 0;
+    this.remote_ip = undefined;
+    this.host=false;
     this.ip = undefined;
-    this.port = 8080;
+    this.port = this.remote_port = 8080;
     this.max_players = 5;
     this.no_players_to_be_expected_to_join = undefined;
     this.deck = new Deck(52);
@@ -55,6 +59,30 @@ class Game {
 
   }
 
+  setThisClientMeta(
+    name,
+    id
+  ) {
+    this.player = {
+      name,
+      id
+    };
+  }
+
+  getServerAddress() {
+    return `http://${this.ip}:${this.port}`;
+  }
+
+
+  setRemoteServerProps(ip, port) {
+    this.remote_ip = ip;
+    this.remote_port = port;
+  }
+
+
+  getRemoteServerAddress() {
+    return `http://${this.remote_ip}:${this.remote_port}`;
+  }
 
   setNoOfPlayers(no_of_players) {
     this.max_players = this.no_players_to_be_expected_to_join = no_of_players;
@@ -95,6 +123,10 @@ class Game {
         }
         let round1 = new Round(round.id, round.sign, starting_turn, this.players, round.no_of_cards_at_start, this.ranks_power);
         await round1.dealCards(this.deck);
+        io.emit("dealt-cards", this.players);
+        while (this.dealt_acknowledgement != this.players.length) {
+          await waitFunction(2000);
+        }
         await round1.placeHandsBets();
         await round1.play();
         this.resetPlayers();
@@ -132,7 +164,7 @@ class Game {
   startServer() {
     let connected_clients = new Map();
     let ips = os.networkInterfaces();
-    this.ip = ips.wlp4s0[0].address;
+    this.ip = this.remote_ip = ips.wlp4s0[0].address;
 
     server = http.createServer((req, res) => {
       res.writeHead(200, {
@@ -179,17 +211,48 @@ class Game {
             socket.disconnect(true);
           } else {
             updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
+            socket.emit("game-joined");
           }
         } else {
           socket.disconnect(true);
         }
       })
+
+
+      socket.on("dealt-card-acknowledgement", () => {
+        this.dealt_acknowledgement++;
+      })
+
     })
+    this.host=true;
+    this.startClient();
   }
 
 
-  startClient(){
-    socket_client(this.ip);
+  startClient() {
+    console.log("starting client");
+    let client = socket_client(this.getRemoteServerAddress());
+
+
+    client.on("connect",()=>{
+      console.log("asldasldada----conected");
+    })
+
+    client.emit("join-game", this.player);
+
+    client.on("dealt-cards", (players) => {
+      let current_player_data = players.filter((player) => player.name == this.player.name)[0];
+      console.log(current_player_data);
+      updateUIAfterCardDistribution(players, current_player_data).then(() => client.emit("dealt-card-acknowledgement"))
+    })
+
+    if(!this.host){
+      client.on("game-joined", () => {
+        updateUIAfterGameJoined();
+      })
+    }
+
+
   }
 
   stopServer() {
@@ -210,10 +273,45 @@ function updateJoinedPlayersUI(players, no_players_to_be_expected_to_join) {
 
 
 
-function renderAddNoOfPlayersUI() {
-
+function updateUIAfterCardDistribution(players, current_player) {
+  return new Promise((resolve, reject) => {
+    let images_base = "./images/"
+    let html = '';
+    players.forEach((player) => {
+      if (player.name == current_player.name) {
+        html += `<h1> Player - ${player.name}</h1>`
+        player.cards.forEach((card, index) => {
+          html += `<img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
+        })
+      } else {
+        html += `<h1> Player - ${player.name}</h1>`
+        player.cards.forEach((card, index) => {
+          html += `<img src="${images_base}back.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
+        })
+      }
+    })
+    $("#playArea").html(html);
+    setTimeout(() => {
+      resolve();
+    }, 2000);
+  });
 }
 
+
+function waitFunction(duration) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration)
+  })
+}
+
+
+function updateUIAfterGameJoined() {
+  $("#main").load("./templates/playarea.html", function () {
+    $("#playArea").text("Waiting other players to join");
+  });
+}
 
 
 
