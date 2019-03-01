@@ -1,1 +1,25 @@
-<div id="playArea"></div>
+<div id="playArea" class="col-md-10"></div>
+<div id="playedCard" class="col-md-2"></div>
+<div class="modal fade" id="playerBetModal" tabindex="-1" role="dialog" aria-labelledby="playerBetModalTitle"
+aria-hidden="true">
+<div class="modal-dialog modal-dialog-centered" role="document">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title" id="">Place Bet</h5>
+    </div>
+    <div class="modal-body">
+      <form>
+        <div class="form-group">
+          <label for="noOfHands">How Many Hands?</label>
+          <input type="text" class="form-control" id="noOfHands" placeholder="">
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <!-- <button type="button" class="btn btn-secondary" id="noOfHandsCancel" data-dismiss="modal">Close</button> -->
+      <button type="button" id="noOfHandsSubmit" class="btn btn-primary" data-dismiss="modal">Start</button>
+    </div>
+    <div id="serverIp"></div>
+  </div>
+</div>
+</div>

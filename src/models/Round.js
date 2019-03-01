@@ -8,20 +8,14 @@ let {
   ipcMain
 } = require("electron");
 
-let game_window;
-
-const readline = require('readline');
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
+let io = undefined;
+let connected_players_sockets = undefined;
 
 
 class Round {
 
 
-  constructor(id, trump_card, stating_turn_index, players, no_of_cards_for_each_player, rank_powers) {
+  constructor(id, trump_card, stating_turn_index, players, no_of_cards_for_each_player, rank_powers, connected_players_sockets, io) {
     this.id = id;
     this.trump_card = trump_card;
     this.no_of_cards_for_each_player = no_of_cards_for_each_player;
@@ -33,6 +27,8 @@ class Round {
     this.rank_powers = rank_powers;
     this.starting_sign = undefined;
     this.stats = [];
+    this.connected_players_sockets = connected_players_sockets;
+    this.io = io;
   }
 
   async placeHandsBets() {
@@ -46,7 +42,7 @@ class Round {
         console.log(` `);
         console.log(player.cards);
         console.log(` `);
-        let no_of_hands_bet = await askToPlaceBet(player.name);
+        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.name]);
         console.log(`${player.name} has bet ${no_of_hands_bet}`);
         player.no_of_hands_bet = parseInt(no_of_hands_bet);
       }
@@ -90,7 +86,7 @@ class Round {
       for (let cards = this.no_of_cards_for_each_player; cards > 0; cards--) {
         console.log(` `);
         console.log(`>>>>>>>>>>>>>>>>>>>>Hand Start ${hand_count}<<<<<<<<<<<<<<<<<<<<`);
-        let hand = new Hand(this.players, this.rank_powers, this.trump_card);
+        let hand = new Hand(this.players, this.rank_powers, this.trump_card, this.connected_players_sockets, this.io);
         await hand.play(this.players[0]);
         let winner_player = hand.getWinner();
         console.log(`$$$$$$$$$$$$$$$$$$$ Winner ${winner_player.name} $$$$$$$$$$$$$$$$$$$`);
@@ -135,11 +131,11 @@ class Round {
 
 }
 
-function askToPlaceBet(player_name) {
+function askToPlaceBet(player, socket) {
   return new Promise((resolve, reject) => {
-    game_window.webContents.send("place-bet", player_name);
-    ipcMain.on("placed-bet", function (event, bet) {
-      resolve(bet);
+    socket.emit("place-bet", player);
+    socket.on("placed-bet", (no_of_hands_bet) => {
+      resolve(no_of_hands_bet);
     })
   })
 }
@@ -163,7 +159,8 @@ function leftShift(array, shifts) {
 
 module.exports = {
   Round,
-  initWindowInRound: (win) => {
-    game_window = win;
+  initRoundConfigs: (socket_server_io, players_sockets) => {
+    io = socket_server_io,
+      connected_players_sockets = players_sockets;
   }
 }

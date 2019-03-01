@@ -19,13 +19,15 @@ const QUESTION_PLAY_CARD = 'Play a card';
 
 
 class Hand {
-  constructor(players, rank_power, trump_sign) {
+  constructor(players, rank_power, trump_sign, connected_players_sockets, io) {
     this.players = players;
     this.rank_power = rank_power;
     this.trump_sign = trump_sign;
     this.winner = undefined;
     this.plays = [];
     this.starting_sign = undefined;
+    this.connected_players_sockets = connected_players_sockets;
+    this.io = io;
   }
 
   async play(first_turn_player) {
@@ -48,10 +50,12 @@ class Hand {
 
         do {
           console.log(` `);
-          card_index = await askToPlayHand(player.name, availability.start_index, availability.end_index);
+          card_index = await askToPlayHand(player, availability.start_index, availability.end_index, this.connected_players_sockets[player.name], this.io);
         } while (card_index > availability.end_index || card_index < availability.start_index)
 
         played_card = player.playCard(card_index);
+
+        await updateRemainingCardsInUI(player,this.connected_players_sockets[player.name]);
 
         if (player.name == first_turn_player.name) {
           this.starting_sign = played_card.sign;
@@ -114,13 +118,26 @@ class Hand {
 
 
 
-function askToPlayHand(player_name, start_index, end_index) {
+function askToPlayHand(player, start_index, end_index, socket) {
   return new Promise((resolve, reject) => {
-    rl.question(`${player_name} play a card between ${start_index}-${end_index}`, (card_index) => {
-      resolve(card_index);
+    socket.emit("play-card", {
+      player,
+      start_index,
+      end_index
+    }, (played_card) => {
+      resolve(played_card.index);
     });
   });
 }
+
+function updateRemainingCardsInUI(player,socket){
+  return new Promise((resolve, reject) => {
+    socket.emit("update-remaining-card",player, () => {
+      resolve();
+    });
+  });
+}
+
 
 
 

@@ -18,17 +18,17 @@ let port = 8080;
 let socket_io = require("socket.io");
 var socket_client = require('socket.io-client');
 let server = undefined;
-let io = undefined;
-console.log("Game")
 
 class Game {
 
 
   constructor() {
+    this.io = undefined;
+    this.connected_players_socket = {};
     this.player = undefined;
     this.dealt_acknowledgement = 0;
     this.remote_ip = undefined;
-    this.host=false;
+    this.host = false;
     this.ip = undefined;
     this.port = this.remote_port = 8080;
     this.max_players = 5;
@@ -121,9 +121,9 @@ class Game {
         if (starting_turn > this.players.length - 1) {
           starting_turn = 0;
         }
-        let round1 = new Round(round.id, round.sign, starting_turn, this.players, round.no_of_cards_at_start, this.ranks_power);
+        let round1 = new Round(round.id, round.sign, starting_turn, this.players, round.no_of_cards_at_start, this.ranks_power, this.connected_players_socket, this.io);
         await round1.dealCards(this.deck);
-        io.emit("dealt-cards", this.players);
+        this.io.emit("dealt-cards", this.players);
         while (this.dealt_acknowledgement != this.players.length) {
           await waitFunction(2000);
         }
@@ -162,6 +162,7 @@ class Game {
 
 
   startServer() {
+
     let connected_clients = new Map();
     let ips = os.networkInterfaces();
     this.ip = this.remote_ip = ips.wlp4s0[0].address;
@@ -181,9 +182,9 @@ class Game {
       console.log(`server started on ${this.ip}:${this.port}`);
     })
 
-    io = socket_io(server);
+    this.io = socket_io(server);
 
-    io.on("connection", (socket) => {
+    this.io.on("connection", (socket) => {
       console.log("connection requested");
 
       /**
@@ -210,6 +211,7 @@ class Game {
             socket.emit("maximum-players-reached");
             socket.disconnect(true);
           } else {
+            this.connected_players_socket[player_data.name] = socket;
             updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
             socket.emit("game-joined");
           }
@@ -218,13 +220,16 @@ class Game {
         }
       })
 
+      socket.on("played-card", (player, card) => {
+        this.io.emit("update-ui-played-card", player, card);
+      })
 
       socket.on("dealt-card-acknowledgement", () => {
         this.dealt_acknowledgement++;
       })
 
     })
-    this.host=true;
+    this.host = true;
     this.startClient();
   }
 
@@ -234,7 +239,7 @@ class Game {
     let client = socket_client(this.getRemoteServerAddress());
 
 
-    client.on("connect",()=>{
+    client.on("connect", () => {
       console.log("asldasldada----conected");
     })
 
@@ -246,17 +251,45 @@ class Game {
       updateUIAfterCardDistribution(players, current_player_data).then(() => client.emit("dealt-card-acknowledgement"))
     })
 
-    if(!this.host){
+    if (!this.host) {
       client.on("game-joined", () => {
         updateUIAfterGameJoined();
       })
     }
 
+    client.on("place-bet", (player) => {
+      updateUIAndPlaceBet((no_of_hands) => {
+        client.emit("placed-bet", no_of_hands);
+      });
+    })
+
+    client.on("play-card", ({
+      player,
+      start_index,
+      end_index
+    }, fn) => {
+      playCard(player, start_index, end_index, (card) => {
+        client.emit("played-card", player, card);
+        fn(card);
+      })
+    })
+
+    client.on("update-ui-played-card", (player, card) => {
+      updateUIAfterCardPlay(card, () => {})
+    })
+
+
+    client.on("update-remaining-card",(player,fn)=>{
+      updateRemainingCardsOfPlayerInUI(player);
+      fn();
+    })
 
   }
 
   stopServer() {
-    io.close();
+    if (this.io) {
+      this.io.close();
+    }
     server.close();
     console.log("killed server");
   }
@@ -276,19 +309,22 @@ function updateJoinedPlayersUI(players, no_players_to_be_expected_to_join) {
 function updateUIAfterCardDistribution(players, current_player) {
   return new Promise((resolve, reject) => {
     let images_base = "./images/"
-    let html = '';
+    let html = ``;
     players.forEach((player) => {
+      html += `<div id=${player.name}>`
       if (player.name == current_player.name) {
-        html += `<h1> Player - ${player.name}</h1>`
+        html += `<h1> Player - ${player.name}</h1><div id="${player.name}_cards">`
         player.cards.forEach((card, index) => {
-          html += `<img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
+          html += `<div id="${player.name}_card_${index}" class="${player.name}_cards d-inline-block" data-card-rank="${card.rank}" data-card-sign="${card.sign}" data-card-index="${index}" ><img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80"></div>`
         })
       } else {
         html += `<h1> Player - ${player.name}</h1>`
         player.cards.forEach((card, index) => {
-          html += `<img src="${images_base}back.png" height="80" width="80" id="${player.name}_card_${index}" class="cards">`
+          html += `<div class="d-inline-block"><img src="${images_base}back.png" height="80" width="80" id="${player.name}_card_${index}"></div>`
         })
       }
+      html += `</div></div>`;
+      $(`.${player.name}_cards`).off("click");
     })
     $("#playArea").html(html);
     setTimeout(() => {
@@ -313,7 +349,53 @@ function updateUIAfterGameJoined() {
   });
 }
 
+function updateUIAndPlaceBet(callback) {
+  $('#playerBetModal').modal('show');
+  $('#playerBetModal').on('shown.bs.modal', function (e) {
+    $("#noOfHandsSubmit").click(() => {
+      let no_of_hands = $("#noOfHands").val();
+      callback(no_of_hands);
+    })
+  })
+}
 
+function playCard(player, start_index, end_index, callback) {
+  $(`.${player.name}_cards`).on("click");
+  $(`#${player.name}`).append("<h2>Play a card</h2>");
+  $(`.${player.name}_cards`).click(function() {
+    let rank = $(this).data("card-rank");
+    let sign = $(this).data("card-sign");
+    let index = $(this).data("card-index");
+    if(index>=start_index && index<=end_index){
+      callback({
+        rank,
+        sign,
+        index
+      })
+    }
+  })
+
+}
+
+
+function updateRemainingCardsOfPlayerInUI(player) {
+  let images_base = "./images/";
+  let html = ``;
+  player.cards.forEach((card, index) => {
+    html += `<div id="${player.name}_card_${index}" class="${player.name}_cards d-inline-block" data-card-rank="${card.rank}" data-card-sign="${card.sign}" data-card-index="${index}" ><img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80"></div>`
+  })
+  $(`#${player.name}_cards`).html(html);
+  $(`.${player.name}_cards`).off("click");
+}
+
+
+
+function updateUIAfterCardPlay(card, callback) {
+  let images_base = "./images/"
+  let html = `<div><img src="${images_base+card.rank}_of_${card.sign}s.png" height="80" width="80"></div>`;
+  $("#playedCard").append(html);
+  callback();
+}
 
 module.exports = {
   Game
