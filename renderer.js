@@ -16,7 +16,6 @@ let this_game;
 
 
 $("#main").on("click", "#startGameBtn", function () {
-  console.log("Renderer");
   $("#spinner-div").show();
   $("#main").prop('disabled', true);
   this_game = new Game();
@@ -56,8 +55,9 @@ $("#main").on("click", "#closeStartedGame,#closeStartedGameAfterPlayerNumbers", 
 $("#main").on("click", "#startGameAfterPlayersJoined", function () {
   $('#playersConnectModal').modal('hide');
   $('#playersConnectModal').on('hidden.bs.modal', function (e) {
-    $("#main").load("./templates/playarea.html", function () {})
-    this_game.start();
+    $("#main").load("./templates/playarea.html", function () {
+      this_game.start();
+    })
   })
 })
 

@@ -1,25 +1,58 @@
-<div id="playArea" class="col-md-10"></div>
-<div id="playedCard" class="col-md-2"></div>
-<div class="modal fade" id="playerBetModal" tabindex="-1" role="dialog" aria-labelledby="playerBetModalTitle"
-aria-hidden="true">
-<div class="modal-dialog modal-dialog-centered" role="document">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h5 class="modal-title" id="">Place Bet</h5>
-    </div>
-    <div class="modal-body">
-      <form>
-        <div class="form-group">
-          <label for="noOfHands">How Many Hands?</label>
-          <input type="text" class="form-control" id="noOfHands" placeholder="">
-        </div>
-      </form>
-    </div>
-    <div class="modal-footer">
-      <!-- <button type="button" class="btn btn-secondary" id="noOfHandsCancel" data-dismiss="modal">Close</button> -->
-      <button type="button" id="noOfHandsSubmit" class="btn btn-primary" data-dismiss="modal">Start</button>
-    </div>
-    <div id="serverIp"></div>
+<div class="row" id="roundInfo"></div>
+<div class="row row-custom">
+  <div id="playArea" class="col-md-7 col-sm-7"></div>
+  <div class="col-md-5 col-sm-5">
+    <div class="row" id="playedCard"></div>
   </div>
 </div>
+<!-- <div class="row">
+  <div class="col-md-12">
+    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#playersStatsModal">
+      Show Stats
+    </button>
+  </div>
+</div> -->
+<div class="modal fade" id="playerBetModal" tabindex="-1" role="dialog" aria-labelledby="playerBetModalTitle"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="">Place Bet</h5>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="noOfHands">How Many Hands?</label>
+            <input type="text" class="form-control" id="noOfHands" placeholder="">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <!-- <button type="button" class="btn btn-secondary" id="noOfHandsCancel" data-dismiss="modal">Close</button> -->
+        <button type="button" id="noOfHandsSubmit" class="btn btn-primary" data-dismiss="modal">Start</button>
+      </div>
+      <div id="serverIp"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="playerWonModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <p id="winner-info"></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" tabindex="-1" role="dialog" id="playersStatsModal">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-body">
+        <table class="table-players-stats table table-striped" id="playersStatsTable">
+        </table>
+      </div>
+    </div>
+  </div>
 </div>

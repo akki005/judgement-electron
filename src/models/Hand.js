@@ -34,22 +34,12 @@ class Hand {
     try {
 
       for (const player of this.players) {
-        console.log(``);
-        console.log(`=====================${player.name} Turn ===========================`);
         let availability;
         let played_card;
         let card_index;
 
         availability = player.getAvailableCardsToPlay(this.starting_sign);
-        console.log(``);
-        console.log(`********Available Cards********`);
-        console.log(` `);
-        console.log(availability.available_cards);
-        console.log(` `);
-        console.log("Hands left to collect-", (player.no_of_hands_bet - player.hands));
-
         do {
-          console.log(` `);
           card_index = await askToPlayHand(player, availability.start_index, availability.end_index, this.connected_players_sockets[player.name], this.io);
         } while (card_index > availability.end_index || card_index < availability.start_index)
 
@@ -60,9 +50,7 @@ class Hand {
         if (player.name == first_turn_player.name) {
           this.starting_sign = played_card.sign;
         }
-        console.log(` `);
-        console.log(`${player.name} played -->${JSON.stringify(played_card)}`);
-
+       
         this.plays.push({
           player: player.name,
           card: played_card
@@ -75,7 +63,6 @@ class Hand {
   }
 
   getWinner() {
-    console.log(` `);
     let winner;
     let played_trump_cards = this.plays.filter((play) => play.card.sign == this.trump_sign);
 

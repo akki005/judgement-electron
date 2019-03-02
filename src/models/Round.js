@@ -34,16 +34,7 @@ class Round {
   async placeHandsBets() {
     try {
       for (const player of this.players) {
-        console.log(` `);
-        console.log(`=====================${player.name} Turn ===========================`);
-        console.log(">>>>> Trump card - ", this.trump_card);
-        console.log(` `);
-        console.log("*****All Available Cards*****");
-        console.log(` `);
-        console.log(player.cards);
-        console.log(` `);
         let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.name]);
-        console.log(`${player.name} has bet ${no_of_hands_bet}`);
         player.no_of_hands_bet = parseInt(no_of_hands_bet);
       }
       return Promise.resolve()
@@ -84,18 +75,17 @@ class Round {
        * Play all hands
        */
       for (let cards = this.no_of_cards_for_each_player; cards > 0; cards--) {
-        console.log(` `);
-        console.log(`>>>>>>>>>>>>>>>>>>>>Hand Start ${hand_count}<<<<<<<<<<<<<<<<<<<<`);
+        await waitFunction(1000);
+        await clearPlayedCardsEvent(this.io);
         let hand = new Hand(this.players, this.rank_powers, this.trump_card, this.connected_players_sockets, this.io);
         await hand.play(this.players[0]);
         let winner_player = hand.getWinner();
         console.log(`$$$$$$$$$$$$$$$$$$$ Winner ${winner_player.name} $$$$$$$$$$$$$$$$$$$`);
         winner_player.addHand();
+        await updateWinnerInfo(winner_player,this.io);
+        await updatePlayersHandEvent(this.players,this.io,this.id);
         let player_index = this.players.findIndex((player) => player.name == winner_player.name);
         leftShift(this.players, player_index);
-        console.log(` `);
-        console.log(`>>>>>>>>>>>>>>>>>>>>Hand End ${hand_count}<<<<<<<<<<<<<<<<<<<<`);
-        console.log(` `);
         hand_count++;
       }
 
@@ -118,6 +108,7 @@ class Round {
           })
         }
       })
+      await updatePlayersStatsTable(this.players,this.io,this.id);
       console.log(` `);
       console.log(`:::::::::::::Round stats::::::::::::::::`);
       console.log(` `);
@@ -140,6 +131,50 @@ function askToPlaceBet(player, socket) {
   })
 }
 
+function clearPlayedCardsEvent(io){
+  return new Promise((resolve, reject) => {
+    io.emit("clear-hand");
+    setTimeout(()=>{
+      resolve();
+    },500);
+  })
+}
+
+function waitFunction(duration) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration)
+  })
+}
+
+function updatePlayersHandEvent(players,io,round_id){
+  return new Promise((resolve, reject) => {
+    io.emit("update-hands-info",players,round_id);
+    setTimeout(()=>{
+      resolve();
+    },200);
+  })
+}
+
+function updateWinnerInfo(player,io){
+  return new Promise((resolve, reject) => {
+    io.emit("update-winner-info",player);
+    setTimeout(()=>{
+      resolve();
+    },2000);
+  })
+}
+
+
+function updatePlayersStatsTable(players,io,round_id){
+  return new Promise((resolve, reject) => {
+    io.emit("update-players-stats-table",players,round_id);
+    setTimeout(()=>{
+      resolve();
+    },1000);
+  })
+}
 
 
 function leftShift(array, shifts) {

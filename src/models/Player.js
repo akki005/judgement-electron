@@ -84,10 +84,13 @@ class Player {
   }
 
   setRoundOutCome(id, outcome, points) {
+    console.log(`Round outcome--->`,id,outcome,points);
+    let round_points=points;
     if (outcome == "won") {
       this.total_points += points;
     }
     this.rounds_stats.push({
+      points:round_points,
       status: outcome,
       id: id,
       no_of_hands_bet: this.no_of_hands_bet,

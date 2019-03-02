@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.7.2",
     "electron": "^4.0.5",
     "electron-packager": "^13.1.0"
   },
