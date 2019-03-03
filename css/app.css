@@ -2,6 +2,10 @@ h1 {
   color: blue
 }
 
+.home-btns{
+  width: 100%;
+}
+
 .all-cards {
   width: 80px;
   /* width: 10%; */
@@ -28,9 +32,10 @@ h1 {
 }
 
 .single-player-area {
+  background: #f9fffe;
+  box-shadow: 1px 2px 1px 1px #e3ece6;
   height: 300px;
   margin: 0px !important;
-  border-style: groove;
   padding-left: 2%;
   padding-right: 2%; 
   padding-bottom: 2%;
@@ -61,13 +66,14 @@ h1 {
     width: 100%;
 }
 
-.played-card-area{
-    height: 20%;
-    width: 20%;
-    margin: auto;
-    margin-left: 0px;
-    margin-right: 0px;
-    margin-top:10%;
+.single-played-card{
+    border-style: groove;
+    border-width: 1px;
+    height: 100px;
+    width: 80px;
+     margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
 }
 
 /* #playArea{
@@ -77,12 +83,13 @@ h1 {
 
 
 #main{
-  margin-left: 2%;
+  margin-left: 0px;
   margin-right: 0px;
+  height: 100%;
 }
 
 #roundInfo{
-  /* height: 200px; */
+  display: flex !important;
   margin-left: 0px;
   margin-right: 0px;
   margin-bottom: 5px;
@@ -125,4 +132,8 @@ h1 {
 }
 .row{
   width: 100% !important;
+}
+
+.container-fluid{
+  height: 100%;
 }

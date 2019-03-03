@@ -1,39 +1,65 @@
 const {
   app,
   BrowserWindow,
-  ipcMain
+  ipcMain,
+  Menu
 } = require('electron');
-require('electron-reload')(__dirname);
 let path = require("path");
 
+if (process.env.NODE_ENV != "dev") {
+  process.env.NODE_ENV = "prod"
+}
 
+// console.log(process.env);
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win
 
 function createWindow() {
   // Create the browser window.
-  win = new BrowserWindow({
-    width: 800,
+
+  if (process.env.NODE_ENV == "prod") {
+    var menu = Menu.buildFromTemplate([{
+      label: 'Menu',
+      submenu: [
+        {
+          label: 'Exit',
+          click() {
+            app.quit()
+          }
+        }
+      ]
+    }])
+    Menu.setApplicationMenu(menu);
+  }
+
+
+  let configs = {
+    width: 1000,
     height: 800,
     webPreferences: {
       nodeIntegration: true
     },
-    icon: path.join(__dirname, "images/playing-cards-assets/png/A_of_spades.png")
-  })
+    icon: path.join(__dirname, "icons/96x96.png")
+  }
+
+  configs.webPreferences.devTools = process.env.NODE_ENV == "prod" ? false : true;
+
+  win = new BrowserWindow()
 
   // and load the index.html of the app.
   win.loadFile('index.html')
 
   // Open the DevTools.
-  win.webContents.openDevTools()
+  //win.webContents.openDevTools()
 
   // Emitted when the window is closed.
   win.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
-    win = null
+    win = null;
+    app.quit();
   })
 
 }
@@ -62,4 +88,3 @@ app.on('activate', () => {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-

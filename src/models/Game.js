@@ -41,7 +41,7 @@ class Game {
   }
 
   initRoundsInfo() {
-    this.no_of_cards_at_start = 1;
+    this.no_of_cards_at_start = 10;
     this.rounds = [];
     let round = 0;
     while (this.no_of_cards_at_start != 0) {
@@ -504,7 +504,7 @@ function updateRemainingCardsOfPlayerInUI(player) {
 function updateUIAfterCardPlay(player, card, callback) {
   $(`#${player.name}-turn-table-dot`).hide();
   let images_base = "./images/"
-  let html = `<div class="played-card-area col-3"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"></div>`;
+  let html = `<div class="single-played-card"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"></div>`;
   $("#playedCard").append(html);
   callback();
 }
@@ -519,8 +519,7 @@ function updateRoundInfo(round) {
 
 
 function clearPlayedCardsInUI() {
-  let html = `<div class="played-card-area col-3"></div>`
-  $("#playedCard").html(html);
+  $("#playedCard").html(``);
 }
 
 

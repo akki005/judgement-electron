@@ -5,18 +5,20 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
+    "dev":"NODE_ENV=dev electron .",
+    "start": "electron .",
+    "build": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite"
   },
   "productName": "judgment",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.7.2",
     "electron": "^4.0.5",
     "electron-packager": "^13.1.0"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.7.2",
     "bootstrap": "^4.3.1",
     "electron-reload": "^1.4.0",
     "jquery": "^3.3.1",
