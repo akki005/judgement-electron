@@ -14,8 +14,8 @@ module.exports.init = (win) => {
 
 class Player {
 
-  constructor(name, position,id) {
-    this.id=id;
+  constructor(name, position, id) {
+    this.id = id;
     this.name = name;
     this.no_of_hands_bet = 0;
     this.cards = [];
@@ -25,6 +25,18 @@ class Player {
     this.diamonds = [];
     this.clubs = [];
     this.position = position;
+    this.rounds_stats = [];
+    this.total_points = 0;
+  }
+
+  restartGameResetState() {
+    this.no_of_hands_bet = 0;
+    this.cards = [];
+    this.hands = 0;
+    this.spades = [];
+    this.hearts = [];
+    this.diamonds = [];
+    this.clubs = [];
     this.rounds_stats = [];
     this.total_points = 0;
   }
@@ -84,13 +96,13 @@ class Player {
   }
 
   setRoundOutCome(id, outcome, points) {
-    console.log(`Round outcome--->`,id,outcome,points);
-    let round_points=points;
+    console.log(`Round outcome--->`, id, outcome, points);
+    let round_points = points;
     if (outcome == "won") {
       this.total_points += points;
     }
     this.rounds_stats.push({
-      points:round_points,
+      points: round_points,
       status: outcome,
       id: id,
       no_of_hands_bet: this.no_of_hands_bet,

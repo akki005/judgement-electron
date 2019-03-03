@@ -5,7 +5,7 @@ h1 {
 .all-cards {
   width: 80px;
   /* width: 10%; */
-  height: 10%;
+  height: 100px;
   padding: 0.05%;
   margin: 0.5%;
   border-style: groove;
@@ -28,6 +28,7 @@ h1 {
 }
 
 .single-player-area {
+  height: 300px;
   margin: 0px !important;
   border-style: groove;
   padding-left: 2%;
@@ -39,7 +40,11 @@ h1 {
   text-decoration: underline;
   width: 30%;
 }
-
+.playarea-row{
+  margin-left: 0px;
+  margin-right: 0px;
+  margin-bottom: 10px;
+}
 .first-card{
     position: fixed;
     background: #ffffff;
@@ -65,18 +70,26 @@ h1 {
     margin-top:10%;
 }
 
+/* #playArea{
+  height: 300px;
+} */
+
+
 
 #main{
   margin-left: 2%;
   margin-right: 0px;
 }
 
-#roundInfo,.row-custom{
+#roundInfo{
+  /* height: 200px; */
   margin-left: 0px;
   margin-right: 0px;
+  margin-bottom: 5px;
 }
 
 .cards-area{
+  height: 240px;
   width: 100%;
   padding: 0px !important;
   margin: 0px !important;
@@ -100,6 +113,7 @@ h1 {
 }
 
 .player-box-header{
+  height: 50px;
   width: 100%;
  margin: 0px !important;
 }

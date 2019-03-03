@@ -37,7 +37,11 @@ class Game {
     this.ranks_power = ["A", "K", "Q", "J", "10", "9", "8", "7", "6", "5", "4", "3", "2"];
     this.players = [];
     this.sign_sequence = ["spade", "diamond", "club", "heart"];
-    this.no_of_cards_at_start = 3;
+    this.initRoundsInfo();
+  }
+
+  initRoundsInfo() {
+    this.no_of_cards_at_start = 1;
     this.rounds = [];
     let round = 0;
     while (this.no_of_cards_at_start != 0) {
@@ -55,8 +59,18 @@ class Game {
         }
       }
     }
+  }
 
-
+  restart() {
+    this.deck.reset();
+    this.initRoundsInfo();
+    this.players.forEach((player) => {
+      player.restartGameResetState();
+    })
+    this.io.emit("restart-game");
+    setTimeout(() => {
+      this.start();
+    }, 2000);
   }
 
   setThisClientMeta(
@@ -117,13 +131,13 @@ class Game {
   async start() {
     try {
       let starting_turn = 0;
-      this.io.emit("create-player-stats-table",this.rounds,this.players);
+      this.io.emit("create-player-stats-table", this.rounds, this.players);
       for (const round of this.rounds) {
         if (starting_turn > this.players.length - 1) {
           starting_turn = 0;
         }
         this.io.emit("round-start", round);
-        await waitFunction(500);
+        await waitFunction(100);
         this.dealt_acknowledgement = 0;
         let round1 = new Round(round.id, round.sign, starting_turn, this.players, round.no_of_cards_at_start, this.ranks_power, this.connected_players_socket, this.io);
         await round1.dealCards(this.deck);
@@ -137,6 +151,7 @@ class Game {
         this.deck.reset();
         starting_turn++;
       }
+      this.io.emit("show-game-stats");
     } catch (error) {
       return Promise.reject(error);
     }
@@ -223,9 +238,9 @@ class Game {
         }
       })
 
-      socket.on("played-card", (player, card) => {
+      /* socket.on("played-card", (player, card) => {
         this.io.emit("update-ui-played-card", player, card);
-      })
+      }) */
 
       socket.on("dealt-card-acknowledgement", () => {
         this.dealt_acknowledgement++;
@@ -242,8 +257,7 @@ class Game {
     let client = socket_client(this.getRemoteServerAddress());
 
 
-    client.on("connect", () => {
-    })
+    client.on("connect", () => {})
 
     client.emit("join-game", this.player);
 
@@ -258,11 +272,16 @@ class Game {
       })
     }
 
-    client.on("place-bet", (player) => {
+    client.on("place-bet", (player, fn) => {
       updateUIAndPlaceBet(player, (no_of_hands) => {
-        client.emit("placed-bet", no_of_hands);
+        fn(no_of_hands);
       });
     })
+
+    client.on("placing-bet", (player) => {
+      updateUIWhilePlayerIsPlacingBet(player, this.player);
+    })
+
 
     client.on("play-card", ({
       player,
@@ -270,13 +289,13 @@ class Game {
       end_index
     }, fn) => {
       playCard(player, start_index, end_index, (card) => {
-        client.emit("played-card", player, card);
+        // client.emit("played-card", player, card);
         fn(card);
       })
     })
 
     client.on("update-ui-played-card", (player, card) => {
-      updateUIAfterCardPlay(card, () => {})
+      updateUIAfterCardPlay(player, card, () => {})
     })
 
 
@@ -305,8 +324,25 @@ class Game {
       updatePlayersStatsTableInUI(players, round_id);
     })
 
-    client.on("create-player-stats-table", (rounds,players) => {
-       createPlayersStatsTableInUI(rounds, players);
+    client.on("create-player-stats-table", (rounds, players) => {
+      createPlayerTurnTableInUI(rounds, players);
+      createPlayersStatsTableInUI(rounds, players);
+    })
+
+    client.on("placed-bet", (player,hands) => {
+      updateAllClientsUIAfterPlayerBets(player,hands);
+    })
+
+    client.on("wait-to-play-card", (player) => {
+      updateTurnTableInUI(player);
+    })
+
+    client.on("show-game-stats", () => {
+      showGameStatsAtEnd(this.host);
+    })
+
+    client.on("restart-game", () => {
+      restartGame();
     })
   }
 
@@ -318,6 +354,26 @@ class Game {
     console.log("killed server");
   }
 
+}
+
+
+function updateTurnTableInUI(player) {
+  $(`#${player.name}-turn-table-dot`).show();
+}
+
+
+function updateAllClientsUIAfterPlayerBets(player,hands) {
+  $('#playerBetWaitModal').modal('hide');
+  $(`#${player.name}-hands-bet-table`).html(hands);
+  $(`#${player.name}-hands-left-table`).html(hands);
+}
+
+
+function updateUIWhilePlayerIsPlacingBet(player, current_player) {
+  if (player.name != current_player.name) {
+    $("#player-bet-wait-info").html(`Waiting for - ${player.name} to place bet`);
+    $('#playerBetWaitModal').modal('show');
+  }
 }
 
 
@@ -335,14 +391,13 @@ function updateUIAfterCardDistribution(players, current_player) {
     let images_base = "./images/"
     let html = ``;
     players.forEach((player) => {
-      html += `<div id=${player.name} class="row single-player-area">
+      if (player.name == current_player.name) {
+        html += `<div id=${player.name} class="row single-player-area">
       <div class="row player-box-header">
       <h4 class="player-name"> ${player.name}<i class="far fa-dot-circle play-dot" id="${player.name}-play-dot"></i>
       </h4>
       <h4 id="${player.name}-round-stats" class="round-stats"></h4>
       </div>`
-
-      if (player.name == current_player.name) {
         html += `<div id="${player.name}_cards" class="row cards-area">`
         player.cards.forEach((card, index) => {
           let card_class = index == 0 ? "first-card" : "other-cards";
@@ -351,24 +406,15 @@ function updateUIAfterCardDistribution(players, current_player) {
           <img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image">
           </div>`
         })
-      } else {
-        html += `<div id="${player.name}_cards" class="col-md-12 cards-area">`
-        player.cards.forEach((card, index) => {
-          let card_class = index == 0 ? "first-card" : "other-cards";
-          html += `
-          <div class="d-inline-block all-cards">
-          <img src="${images_base}back.png" class="card-image" id="${player.name}_card_${index}">
-          </div>`
-        })
+        html += `</div></div>`;
+        $(`.${player.name}_cards`).off("click");
       }
-      html += `</div></div>`;
-      $(`.${player.name}_cards`).off("click");
     })
     $("#playArea").html(html);
     $(".play-dot").hide();
     setTimeout(() => {
       resolve();
-    }, 2000);
+    }, 500);
   });
 }
 
@@ -389,6 +435,7 @@ function updateUIAfterGameJoined() {
 }
 
 function updateUIAndPlaceBet(player, callback) {
+  $('#playerBetWaitModal').modal('hide');
   $('#playerBetModal').modal('show');
   $('#playerBetModal').on('shown.bs.modal', function (e) {
     $("#noOfHandsSubmit").click(() => {
@@ -404,12 +451,12 @@ function playCard(player, start_index, end_index, callback) {
 
   let flash = setInterval(() => {
     blink();
-  }, 1000)
+  }, 500)
 
   function blink() {
     // $(`#${player.name}-play-dot`).hide("click");
-    $(`#${player.name}-play-dot`).fadeOut(500);
-    $(`#${player.name}-play-dot`).fadeIn(500);
+    $(`#${player.name}-play-dot`).fadeOut(250);
+    $(`#${player.name}-play-dot`).fadeIn(250);
   }
   $(`.${player.name}_cards`).on("click");
   // $(`#${player.name}`).append("<h2>Play a card</h2>");
@@ -454,15 +501,17 @@ function updateRemainingCardsOfPlayerInUI(player) {
 
 
 
-function updateUIAfterCardPlay(card, callback) {
+function updateUIAfterCardPlay(player, card, callback) {
+  $(`#${player.name}-turn-table-dot`).hide();
   let images_base = "./images/"
-  let html = `<div class="played-card-area col-md-3 col-sm-3"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"></div>`;
+  let html = `<div class="played-card-area col-3"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"></div>`;
   $("#playedCard").append(html);
   callback();
 }
 
 
 function updateRoundInfo(round) {
+  $("#playedCard").html(``);
   let html = `
     <h4> Round - ${round.id+1}, Trump - ${round.sign}, Total Cards - ${round.no_of_cards_at_start}</h4>`
   $("#roundInfo").html(html);
@@ -470,7 +519,7 @@ function updateRoundInfo(round) {
 
 
 function clearPlayedCardsInUI() {
-  let html = `<div class="played-card-area col-md-3"></div>`
+  let html = `<div class="played-card-area col-3"></div>`
   $("#playedCard").html(html);
 }
 
@@ -480,7 +529,7 @@ function showWinnerInfoInUI(player) {
   $('#playerWonModal').modal('show');
   setTimeout(() => {
     $('#playerWonModal').modal('hide');
-  }, 2000)
+  }, 1000)
 }
 
 
@@ -492,6 +541,8 @@ function updateHandsInfoInUI(players, current_player, round_id) {
       let html = `Bet-${player.no_of_hands_bet},Hands-${player.hands}`;
       $(`#${player.name}-round-stats`).html(html);
     }
+    $(`#${player.name}-hands-bet-table`).html(player.no_of_hands_bet);
+    $(`#${player.name}-hands-left-table`).html(player.no_of_hands_bet - player.hands);
   })
 }
 
@@ -506,31 +557,70 @@ function updatePlayersStatsTableInUI(players, round_id) {
 
 function createPlayersStatsTableInUI(rounds, players) {
 
-    let table_head_html = `<thead><tr><th>Trump</th>`;
+  let table_head_html = `<thead><tr><th>Trump</th>`;
 
+  players.forEach((player) => {
+    table_head_html += `<th>${player.name}</th>`
+  })
+
+  table_head_html += ` </tr></thead>`;
+
+  let table_body = `<tbody>`;
+
+  rounds.forEach((round) => {
+    let table_row = `<tr><td>${round.sign}</td>`;
     players.forEach((player) => {
-      table_head_html += `<th>${player.name}</th>`
+      table_row += `<td id=${player.name}-${round.id}-row></td>`
     })
+    table_row += `</tr>`;
+    table_body += table_row;
+  })
 
-    table_head_html += ` </tr></thead>`;
+  table_body += `</tbody>`;
 
-    let table_body = `<tbody>`;
-
-    rounds.forEach((round) => {
-      let table_row = `<tr><td>${round.sign}</td>`;
-      players.forEach((player) => {
-        table_row += `<td id=${player.name}-${round.id}-row></td>`
-      })
-      table_row += `</tr>`;
-      table_body += table_row;
-    })
-
-    table_body += `</tbody>`;
-
-    let table_html = table_head_html + table_body
-    $("#playersStatsTable").html(table_html);
+  let table_html = table_head_html + table_body
+  $("#playersStatsTable").html(table_html);
 
 
+}
+
+function createPlayerTurnTableInUI(rounds, players) {
+
+  let table_head_html = `<thead><tr><th>Player</th><th>Turn</th><th>Hands Bet</th><th>Hands Left</th>`;
+
+  let table_body = `<tbody>`;
+
+  players.forEach((player) => {
+    let table_row = `
+    <tr id="${player.name}-table-turn">
+      <td>${player.name}</td>
+      <td><i class="far fa-dot-circle play-dot" id="${player.name}-turn-table-dot"></i></td>
+      <td id="${player.name}-hands-bet-table"></td>
+      <td id="${player.name}-hands-left-table"></td>
+    </tr>`;
+    table_body += table_row;
+  })
+
+  table_body += `</tbody>`;
+
+  let table_html = table_head_html + table_body
+  $("#playersTurn").html(table_html);
+
+}
+
+function showGameStatsAtEnd(isHost) {
+  if (isHost) {
+    let html_button_restart_game = `
+    <div class="modal-footer">
+     <button type="button" id="restartGame" class="btn btn-primary" data-dismiss="modal" >Restart Game</button>
+    </div>`
+    $("#playerStatsBody").append(html_button_restart_game);
+  }
+  $("#playersStatsModal").modal('show');
+}
+
+function restartGame() {
+  $("#playersStatsModal").modal('hide');
 }
 
 module.exports = {

@@ -82,3 +82,9 @@ $("#main").on("click", "#joinGameSubmit", function () {
     this_game.startClient();
   })
 })
+
+$("#main").on("click", "#restartGame", function () {
+  $("#restartGame").prop('disabled',true);
+  $("#restartGame").remove();
+  this_game.restart();
+})

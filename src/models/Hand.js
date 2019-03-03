@@ -105,13 +105,15 @@ class Hand {
 
 
 
-function askToPlayHand(player, start_index, end_index, socket) {
+function askToPlayHand(player, start_index, end_index, socket,io) {
   return new Promise((resolve, reject) => {
+    io.emit("wait-to-play-card",player);
     socket.emit("play-card", {
       player,
       start_index,
       end_index
     }, (played_card) => {
+      io.emit("update-ui-played-card", player, played_card);
       resolve(played_card.index);
     });
   });

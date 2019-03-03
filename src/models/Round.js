@@ -34,7 +34,7 @@ class Round {
   async placeHandsBets() {
     try {
       for (const player of this.players) {
-        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.name]);
+        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.name],this.io);
         player.no_of_hands_bet = parseInt(no_of_hands_bet);
       }
       return Promise.resolve()
@@ -75,7 +75,7 @@ class Round {
        * Play all hands
        */
       for (let cards = this.no_of_cards_for_each_player; cards > 0; cards--) {
-        await waitFunction(1000);
+        await waitFunction(250);
         await clearPlayedCardsEvent(this.io);
         let hand = new Hand(this.players, this.rank_powers, this.trump_card, this.connected_players_sockets, this.io);
         await hand.play(this.players[0]);
@@ -122,12 +122,13 @@ class Round {
 
 }
 
-function askToPlaceBet(player, socket) {
+function askToPlaceBet(player, socket,io) {
   return new Promise((resolve, reject) => {
-    socket.emit("place-bet", player);
-    socket.on("placed-bet", (no_of_hands_bet) => {
+    io.emit("placing-bet", player);
+    socket.emit("place-bet", player,(no_of_hands_bet)=>{
+      io.emit("placed-bet", player,no_of_hands_bet);
       resolve(no_of_hands_bet);
-    })
+    });
   })
 }
 
@@ -136,7 +137,7 @@ function clearPlayedCardsEvent(io){
     io.emit("clear-hand");
     setTimeout(()=>{
       resolve();
-    },500);
+    },250);
   })
 }
 
@@ -153,7 +154,7 @@ function updatePlayersHandEvent(players,io,round_id){
     io.emit("update-hands-info",players,round_id);
     setTimeout(()=>{
       resolve();
-    },200);
+    },250);
   })
 }
 
@@ -162,7 +163,7 @@ function updateWinnerInfo(player,io){
     io.emit("update-winner-info",player);
     setTimeout(()=>{
       resolve();
-    },2000);
+    },1000);
   })
 }
 
@@ -172,7 +173,7 @@ function updatePlayersStatsTable(players,io,round_id){
     io.emit("update-players-stats-table",players,round_id);
     setTimeout(()=>{
       resolve();
-    },1000);
+    },250);
   })
 }
 
