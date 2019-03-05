@@ -5,16 +5,18 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev":"NODE_ENV=dev electron .",
+    "dev": "NODE_ENV=dev electron .",
     "start": "electron .",
-    "build": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite"
+    "build": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite",
+    "package-debian": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite && electron-installer-debian --src dist/judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --arch amd64"
   },
   "productName": "judgment",
   "keywords": [],
-  "author": "",
+  "author": "Akash Patel",
   "license": "ISC",
   "devDependencies": {
     "electron": "^4.0.5",
+    "electron-installer-debian": "^1.1.1",
     "electron-packager": "^13.1.0"
   },
   "dependencies": {
