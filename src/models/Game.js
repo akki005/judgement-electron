@@ -212,8 +212,12 @@ class Game {
         let player_name = connected_clients.get(socket.id);
         if (player_name) {
           console.log(`Player ${JSON.stringify(player_name)} disconnected`);
-          this.removePlayer(player_name);
-          updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
+          // this.removePlayer(player_name);
+          if (this.connected_players_socket[player_name]) {
+            this.io.emit("player-disconnect", player_name);
+          } else {
+            updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
+          }
         } else {
           console.log("someone left");
         }
@@ -224,14 +228,24 @@ class Game {
        */
       socket.on("join-game", (player_data) => {
         if (player_data && player_data.name && player_data.id) {
-          connected_clients.set(socket.id, player_data.name);
-          if (!this.addPlayer(player_data.name, player_data.id)) {
-            socket.emit("maximum-players-reached");
-            socket.disconnect(true);
-          } else {
+
+          /**
+           * handle reconnect
+           */
+          if (this.connected_players_socket[player_data.name]) {
             this.connected_players_socket[player_data.name] = socket;
-            updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
-            socket.emit("game-joined");
+            this.io.emit("player-reconnect", player_data.name);
+            socket.emit("reconnected");
+          } else {
+            connected_clients.set(socket.id, player_data.name);
+            if (!this.addPlayer(player_data.name, player_data.id)) {
+              socket.emit("maximum-players-reached");
+              socket.disconnect(true);
+            } else {
+              this.connected_players_socket[player_data.name] = socket;
+              updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
+              socket.emit("game-joined");
+            }
           }
         } else {
           socket.disconnect(true);
@@ -329,8 +343,8 @@ class Game {
       createPlayersStatsTableInUI(rounds, players);
     })
 
-    client.on("placed-bet", (player,hands) => {
-      updateAllClientsUIAfterPlayerBets(player,hands);
+    client.on("placed-bet", (player, hands) => {
+      updateAllClientsUIAfterPlayerBets(player, hands);
     })
 
     client.on("wait-to-play-card", (player) => {
@@ -344,6 +358,18 @@ class Game {
     client.on("restart-game", () => {
       restartGame();
     })
+
+    client.on("player-disconnect", (player_name) => {
+      updateUIOnPlayerDisconnect(player_name);
+    })
+
+    client.on("player-reconnect",(player_name)=>{
+      updateUIOnPlayerReconnect(player_name);
+    })
+
+    client.on("reconnected",()=>{
+      
+    })
   }
 
   stopServer() {
@@ -356,13 +382,23 @@ class Game {
 
 }
 
+function updateUIOnPlayerReconnect(player_name) {
+  $("#disconnected-player-info").html(``);
+  $("#playerDisconnectModal").modal("hide");
+}
+
+function updateUIOnPlayerDisconnect(player_name) {
+  $("#disconnected-player-info").html(`${player_name} got disconnected. waiting for reconnect`);
+  $("#playerDisconnectModal").modal("show");
+}
+
 
 function updateTurnTableInUI(player) {
   $(`#${player.name}-turn-table-dot`).show();
 }
 
 
-function updateAllClientsUIAfterPlayerBets(player,hands) {
+function updateAllClientsUIAfterPlayerBets(player, hands) {
   $('#playerBetWaitModal').modal('hide');
   $(`#${player.name}-hands-bet-table`).html(hands);
   $(`#${player.name}-hands-left-table`).html(hands);
