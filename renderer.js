@@ -28,16 +28,18 @@ $("#main").on("click", "#noOfPlayersSubmit", function () {
   let player_name = $('#playerNameStartGame').val();
   let player_id = uuid();
   this_game.setThisClientMeta(player_name, player_id);
-  this_game.startServer();
-  $("#spinner-div").hide();
-  $("#startGameAfterPlayersJoined").prop('disabled', true);
-  $('#GameStartModal').modal('hide');
-  $('#GameStartModal').on('hidden.bs.modal', function (e) {
+  this_game.startServer().then(() => {
     $("#spinner-div").hide();
-    $('#playersConnectModal').modal('show');
-    $('#noOfPlayersConnected').val(this_game.players.length);
-    $('#serverIp').text(`${this_game.ip}:${this_game.port}`);
-  })
+    $("#startGameAfterPlayersJoined").prop('disabled', true);
+    $('#GameStartModal').modal('hide');
+    $('#GameStartModal').on('hidden.bs.modal', function (e) {
+      $("#spinner-div").hide();
+      $('#playersConnectModal').modal('show');
+      $('#noOfPlayersConnected').val(this_game.players.length);
+      $('#serverIp').text(`${this_game.ip}:${this_game.port}`);
+    })
+  });
+
 })
 
 
@@ -61,30 +63,50 @@ $("#main").on("click", "#startGameAfterPlayersJoined", function () {
   })
 })
 
+
 $("#main").on("click", "#joinGameBtn", function () {
-  $("#spinner-div").show();
-  $("#main").prop('disabled', true);
-  $('#joinGameModal').modal('show');
+  $('#searchGameModal').modal('show');
+  $("#joinGameSubmit").prop('disabled', true);
+  this_game = new Game();
+  this_game.startClient();
 })
 
+
+
 $("#main").on("click", "#joinGameSubmit", function () {
-  $("#spinner-div").hide();
-  $("#main").prop('disabled', false);
-  $('#joinGameModal').modal('hide');
-  $('#joinGameModal').on('hidden.bs.modal', function (e) {
-    this_game = new Game();
-    let player_name = $('#playerNameJoinGame').val();
-    let player_id = uuid();
-    let ip = $('#ipToJoin').val();
-    let port = $('#portToJoin').val();
-    this_game.setThisClientMeta(player_name, player_id);
-    this_game.setRemoteServerProps(ip, port);
-    this_game.startClient();
-  })
+
+  let player_name = $("#playerNameJoinGame").val();
+  let game_to_join = $('#availableGames').val();
+  if (!player_name) {
+    $("#playerNameJoinGame").focus()
+  } else if (!game_to_join) {
+    $("#availableGames").focus()
+  } else {
+    $("#spinner-div").hide();
+    $("#main").prop('disabled', false);
+    $('#searchGameModal').modal('hide');
+    $('#searchGameModal').on('hidden.bs.modal', function (e) {
+      this_game = new Game();
+      let player_name = $('#playerNameJoinGame').val();
+      let player_id = uuid();
+      let id = $('#availableGames').val();
+      let ip = id.split("_")[1].trim();
+      let port = id.split("_")[2].trim();
+      this_game.setThisClientMeta(player_name, player_id);
+      this_game.setRemoteServerProps(ip, port);
+      this_game.startSocketClient();
+    })
+  }
 })
 
 $("#main").on("click", "#restartGame", function () {
-  $("#restartGame").prop('disabled',true);
+  $("#restartGame").prop('disabled', true);
   $("#restartGame").remove();
   this_game.restart();
+})
+
+$("#main").on('click',"#closeJoinGame",function(){
+  $("option.available-games-options").remove();
+  $("#playerNameJoinGame").val(``);
+  this_game=undefined;
 })

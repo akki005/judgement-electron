@@ -11,18 +11,26 @@ const {
   Card
 } = require("./Card");
 
-
+var udp_server;
+var udp_client;
+let dgram = require('dgram');
 let http = require("http");
 let os = require("os");
-let port = 8080;
 let socket_io = require("socket.io");
 var socket_client = require('socket.io-client');
 let server = undefined;
+let portfinder = require('portfinder');
+let broadcastAddress = require("broadcast-address");
+let BROADCAST_ADDR = broadcastAddress('wlp4s0'); //-> 127.255.255.255
+let BROADCAST_PORT = 8080;
+let constants = require("../constant");
+let debug = require("debug")("JM");
 
 class Game {
 
 
   constructor() {
+    this.hosts = [];
     this.io = undefined;
     this.connected_players_socket = {};
     this.player = undefined;
@@ -30,7 +38,7 @@ class Game {
     this.remote_ip = undefined;
     this.host = false;
     this.ip = undefined;
-    this.port = this.remote_port = 8080;
+    this.port = this.remote_port = undefined;
     this.max_players = 5;
     this.no_players_to_be_expected_to_join = undefined;
     this.deck = new Deck(52);
@@ -147,6 +155,7 @@ class Game {
         }
         await round1.placeHandsBets();
         await round1.play();
+        this.io.emit("round-end", this.players);
         this.resetPlayers();
         this.deck.reset();
         starting_turn++;
@@ -179,7 +188,7 @@ class Game {
   }
 
 
-  startServer() {
+  async startServer() {
 
     let connected_clients = new Map();
     let ips = os.networkInterfaces();
@@ -192,30 +201,45 @@ class Game {
       res.write('Hello Node JS Server Response');
       res.end();
     });
+
+    this.port = this.remote_port = await portfinder.getPortPromise();
+
     server.listen(this.port, this.ip);
     server.on("error", (error) => {
       console.error(error);
     });
     server.on("listening", () => {
-      console.log(`server started on ${this.ip}:${this.port}`);
+      debug(`${constants.console_signs.check} server started on ${this.ip}:${this.port}`);
     })
+
+
+    udp_server = dgram.createSocket("udp4");
+
+    udp_server.bind(() => {
+      udp_server.setBroadcast(true);
+      setInterval(() => {
+        let message = new Buffer.from(`Judgment Host --${this.player.name}::${this.ip}::${this.port}`);
+        udp_server.send(message, 0, message.length, BROADCAST_PORT, BROADCAST_ADDR, function () {
+          debug("Sent '" + message + "'");
+        });
+      }, 3000);
+    });
+
 
     this.io = socket_io(server);
 
     this.io.on("connection", (socket) => {
-      console.log("connection requested");
-
       /**
        * handle player disconnect
        */
       socket.on("disconnect", () => {
         let player_name = connected_clients.get(socket.id);
         if (player_name) {
-          console.log(`Player ${JSON.stringify(player_name)} disconnected`);
+          debug(`${constants.console_signs.cross} Player ${JSON.stringify(player_name)} disconnected`);
           this.removePlayer(player_name);
           updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
         } else {
-          console.log("someone left");
+          debug("someone left");
         }
       })
 
@@ -225,12 +249,14 @@ class Game {
       socket.on("join-game", (player_data) => {
         if (player_data && player_data.name && player_data.id) {
           connected_clients.set(socket.id, player_data.name);
+          debug(`Join Game Request from -> ${player_data.name}`);
           if (!this.addPlayer(player_data.name, player_data.id)) {
             socket.emit("maximum-players-reached");
             socket.disconnect(true);
           } else {
             this.connected_players_socket[player_data.name] = socket;
             updateJoinedPlayersUI(this.players, this.no_players_to_be_expected_to_join);
+            debug(`${constants.console_signs.check} ${player_data.name} joined game`);
             socket.emit("game-joined");
           }
         } else {
@@ -248,16 +274,53 @@ class Game {
 
     })
     this.host = true;
-    this.startClient();
+    this.startSocketClient();
   }
 
 
   startClient() {
-    console.log("starting client");
+
+    udp_client = dgram.createSocket({
+      type: 'udp4',
+      reuseAddr: true
+    });
+
+    udp_client.on('listening', () => {
+      var address = udp_client.address();
+      debug(`${constants.console_signs.check} UDP Client listening on ${address.address}:${address.port}`);
+      udp_client.setBroadcast(true);
+    });
+
+    udp_client.on('message', (message, rinfo) => {
+      message=message.toString();
+      debug('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
+      if (message.includes("Judgment Host")) {
+        debug("Message from Judgment host");
+        let judgment_host_info = message.split("--")[1];
+        let [name, ip, port] = judgment_host_info.split("::");
+        if (!this.hosts.includes(ip)) {
+          this.hosts.push(ip)
+          debug(`Judgment host name:${name},ip:${ip},port:${port}`);
+          updateUIOnHostFound(name, ip, port);
+          udp_client.close();
+        }
+      }
+    });
+
+    udp_client.bind(BROADCAST_PORT, BROADCAST_ADDR);
+
+
+  }
+
+  startSocketClient() {
+
     let client = socket_client(this.getRemoteServerAddress());
 
-
     client.on("connect", () => {})
+
+    client.on("disconnect", () => {
+      updateUIOnHostDisconnect();
+    });
 
     client.emit("join-game", this.player);
 
@@ -329,8 +392,8 @@ class Game {
       createPlayersStatsTableInUI(rounds, players);
     })
 
-    client.on("placed-bet", (player,hands) => {
-      updateAllClientsUIAfterPlayerBets(player,hands);
+    client.on("placed-bet", (player, hands) => {
+      updateAllClientsUIAfterPlayerBets(player, hands);
     })
 
     client.on("wait-to-play-card", (player) => {
@@ -344,7 +407,13 @@ class Game {
     client.on("restart-game", () => {
       restartGame();
     })
+
+    client.on("round-end", (players) => {
+      updateUIAfterRoundEnd(players);
+    })
   }
+
+
 
   stopServer() {
     if (this.io) {
@@ -356,13 +425,23 @@ class Game {
 
 }
 
+function updateUIOnHostDisconnect() {
+  $("#availableGames").html(``);
+}
+
+
+function updateUIOnHostFound(name, ip, port) {
+  $("#joinGameSubmit").prop('disabled', false);
+  $("#availableGames").append(`<option value="${name}_${ip}_${port}" class="available-games-options">${name}</option>`);
+}
+
 
 function updateTurnTableInUI(player) {
   $(`#${player.name}-turn-table-dot`).show();
 }
 
 
-function updateAllClientsUIAfterPlayerBets(player,hands) {
+function updateAllClientsUIAfterPlayerBets(player, hands) {
   $('#playerBetWaitModal').modal('hide');
   $(`#${player.name}-hands-bet-table`).html(hands);
   $(`#${player.name}-hands-left-table`).html(hands);
@@ -545,6 +624,13 @@ function updateHandsInfoInUI(players, current_player, round_id) {
   })
 }
 
+
+function updateUIAfterRoundEnd(players) {
+  players.forEach((player) => {
+    $(`#${player.name}-hands-bet-table`).html(``);
+    $(`#${player.name}-hands-left-table`).html(``);
+  })
+}
 
 function updatePlayersStatsTableInUI(players, round_id) {
   players.forEach((player) => {

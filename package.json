@@ -7,6 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=dev electron .",
     "start": "electron .",
+    "build-windows": "electron-packager . judgment --asar --platform=win32 --arch=x64 --out dist/ --overwrite",
     "build": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite",
     "package-debian": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite && electron-installer-debian --src dist/judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --arch amd64"
   },
@@ -22,9 +23,12 @@
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.7.2",
     "bootstrap": "^4.3.1",
+    "broadcast-address": "^1.0.2",
+    "debug": "^4.1.1",
     "electron-reload": "^1.4.0",
     "jquery": "^3.3.1",
     "popper.js": "^1.14.7",
+    "portfinder": "^1.0.20",
     "socket.io": "^2.2.0",
     "uuid": "^3.3.2"
   }

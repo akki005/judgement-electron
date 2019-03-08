@@ -1,11 +1,4 @@
 <div class="row justify-content-center">
-
-  <!--  <button type="button" class="btn btn-primary" id="startGameBtn">
-      Start Game
-    </button>
-    <button type="button" class="btn btn-primary" id="joinGameBtn">
-      Join Game
-    </button> -->
   <div class="col-4 align-self-center">
     <button type="button" class="btn btn-primary home-btns" id="startGameBtn">
       Start Game
@@ -67,34 +60,31 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="joinGameModal" tabindex="-1" role="dialog" aria-labelledby="joinGameModalTitle" aria-hidden="true"
-  data-backdrop="static" data-keyboard="false">
+<div class="modal fade" id="searchGameModal" tabindex="-1" role="dialog" aria-labelledby="searchGameModalTitle"
+  aria-hidden="true" data-backdrop="static" data-keyboard="false">
   <div class="modal-dialog modal-dialog-centered" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">Game Details</h5>
+        <h5 class="modal-title">Available Games</h5>
       </div>
       <div class="modal-body">
         <form>
           <div class="form-group">
             <label for="playerNameJoinGame">Your Name</label>
-            <input type="text" class="form-control" id="playerNameJoinGame" placeholder="your name">
+            <input type="text" class="form-control" id="playerNameJoinGame" placeholder="your name" required>
           </div>
           <div class="form-group">
-            <label for="ipToJoin">IP</label>
-            <input type="text" class="form-control" id="ipToJoin" placeholder="ip address to join">
-          </div>
-          <div class="form-group">
-            <label for="portToJoin">PORT</label>
-            <input type="text" class="form-control" id="portToJoin" placeholder="port address to join">
+            <label for="availableGames">Games</label>
+            <select id="availableGames" class="form-control">
+              <option selected disabled>Select Id to join</option>
+            </select>
           </div>
         </form>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" id="closeJoinGame" data-dismiss="modal">Close</button>
-        <button type="button" id="joinGameSubmit" class="btn btn-primary" data-dismiss="modal">Submit</button>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" id="closeJoinGame" data-dismiss="modal">Close</button>
+          <button type="submit" id="joinGameSubmit" class="btn btn-primary" disabled>Submit</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 </div>
