@@ -525,6 +525,7 @@ function updateUIAfterGameJoined() {
 function updateUIAndPlaceBet(player, callback) {
   $('#playerBetWaitModal').modal('hide');
   $('#playerBetModal').modal('show');
+  $("#playerTurnNotification").trigger('play');
   $('#playerBetModal').on('shown.bs.modal', function (e) {
     $("#noOfHandsSubmit").click(() => {
       $('#playerBetModal').on('hidden.bs.modal', function () {
@@ -538,6 +539,8 @@ function updateUIAndPlaceBet(player, callback) {
 }
 
 function playCard(player, start_index, end_index, callback) {
+
+  $("#playerTurnNotification").trigger('play');
 
   let flash = setInterval(() => {
     blink();
@@ -649,6 +652,7 @@ function updatePlayersStatsTableInUI(players, round_id) {
   players.forEach((player) => {
     let round_stat = player.rounds_stats.filter((round) => round.id == round_id)[0];
     $(`#${player.name}-${round_id}-row`).html(`${round_stat.points}`);
+    $(`#${player.name}-total-row`).html(`${player.total_points}`);    
   })
 }
 
@@ -674,9 +678,16 @@ function createPlayersStatsTableInUI(rounds, players) {
     table_body += table_row;
   })
 
-  table_body += `</tbody>`;
+  let table_row_total = `<tr><td>Total</td>`;
 
+  players.forEach((player)=>{
+      table_row_total += `<td id=${player.name}-total-row></td>`;
+  })
+
+  table_row_total += `</tr>`;
+  table_body += table_row_total;
   let table_html = table_head_html + table_body
+
   $("#playersStatsTable").html(table_html);
 
 

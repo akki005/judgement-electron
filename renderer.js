@@ -2,20 +2,26 @@ let {
   ipcRenderer
 } = require("electron");
 let uuid = require("uuid/v1");
-let this_player = {
-  name: "Akash",
-  id: 1
-}
+
 let {
   Game
 } = require("./src/models/Game");
 
 let this_game;
 
+ipcRenderer.on("back-to-lobby", () => {
+  if (this_game) {
+    this_game = null;
+  }
+  $(".modal").modal("hide");
+  $(".modal").on("hidden.bs.modal",()=>{
+    $("#main").load("./templates/home.html")
+  })
+})
 
 
-$(window).keypress(function(e) {
-  if(e.keyCode==13){
+$(window).keypress(function (e) {
+  if (e.keyCode == 13) {
     e.preventDefault();
   }
 });
@@ -62,7 +68,7 @@ $("#main").on("click", "#closeStartedGame,#closeStartedGameAfterPlayerNumbers", 
 $("#main").on("click", "#startGameAfterPlayersJoined", function () {
   $('#playersConnectModal').modal('hide');
   $('#playersConnectModal').on('hidden.bs.modal', function (e) {
-    $("#main").load("./templates/playarea.html", function () {     
+    $("#main").load("./templates/playarea.html", function () {
       this_game.stopUdpServer();
       this_game.start();
     })
@@ -111,8 +117,8 @@ $("#main").on("click", "#restartGame", function () {
   this_game.restart();
 })
 
-$("#main").on('click',"#closeJoinGame",function(){
+$("#main").on('click', "#closeJoinGame", function () {
   $("option.available-games-options").remove();
   $("#playerNameJoinGame").val(``);
-  this_game=undefined;
+  this_game = undefined;
 })

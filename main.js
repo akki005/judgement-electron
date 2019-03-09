@@ -21,7 +21,12 @@ function createWindow() {
   if (process.env.NODE_ENV == "prod") {
     var menu = Menu.buildFromTemplate([{
       label: 'Menu',
-      submenu: [
+      submenu: [{
+          label: 'Go to Lobby',
+          click() {
+            win.webContents.send("back-to-lobby");
+          }
+        },
         {
           label: 'Exit',
           click() {
