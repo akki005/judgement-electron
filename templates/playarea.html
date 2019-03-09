@@ -1,27 +1,30 @@
-<div class="row" id="roundInfo"></div>
+<div class="row"><div class="col-12" id="roundInfo"></div></div>
+
 <div class="row playarea-row">
   <div id="playArea" class="col-7"></div>
   <div class="col-5">
     <div class="row" id="playedCard"></div>
   </div>
 </div>
+
 <div class="row table-row">
   <div class="col-5">
     <table class="table-players-stats table table-striped" id="playersTurn">
     </table>
   </div>
 </div>
-<div class="row">
+
+<div id="players-stats-div">
   <div class="col-12">
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#playersStatsModal">
       Show Stats
     </button>
   </div>
 </div>
-</div>
+
 <div class="modal fade" id="playerBetModal" tabindex="-1" role="dialog" aria-labelledby="playerBetModalTitle"
-  aria-hidden="true"  data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered" role="document">
+  aria-hidden="true" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog right-position-dialog" role="document" id="playerBetModalDialog">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="">Place Bet</h5>
@@ -35,15 +38,14 @@
         </form>
       </div>
       <div class="modal-footer">
-        <!-- <button type="button" class="btn btn-secondary" id="noOfHandsCancel" data-dismiss="modal">Close</button> -->
-        <button type="button" id="noOfHandsSubmit" class="btn btn-primary" data-dismiss="modal">Start</button>
+        <button type="button" id="noOfHandsSubmit" class="btn btn-primary" data-dismiss="modal">Submit</button>
       </div>
       <div id="serverIp"></div>
     </div>
   </div>
 </div>
 
-<div class="modal" tabindex="-1" role="dialog" id="playerWonModal"  data-backdrop="static" data-keyboard="false">
+<div class="modal" tabindex="-1" role="dialog" id="playerWonModal" data-backdrop="static" data-keyboard="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-body">
@@ -64,8 +66,8 @@
   </div>
 </div>
 
-<div class="modal" tabindex="-1" role="dialog" id="playerBetWaitModal"  data-backdrop="static" data-keyboard="false" >
-  <div class="modal-dialog" role="document">
+<div class="modal" tabindex="-1" role="dialog" id="playerBetWaitModal" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog right-position-dialog" role="document">
     <div class="modal-content">
       <div class="modal-body">
         <p id="player-bet-wait-info"></p>
@@ -73,3 +75,13 @@
     </div>
   </div>
 </div>
+
+<div class="modal" tabindex="-1" role="dialog" id="playerJoinWaitModal" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-body">
+          <p>Waiting for other players to join</p>
+        </div>
+      </div>
+    </div>
+  </div>

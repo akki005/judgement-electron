@@ -30,6 +30,7 @@ class Game {
 
 
   constructor() {
+    this.upd_server_broadcast_interval;
     this.hosts = [];
     this.io = undefined;
     this.connected_players_socket = {};
@@ -217,7 +218,7 @@ class Game {
 
     udp_server.bind(() => {
       udp_server.setBroadcast(true);
-      setInterval(() => {
+      this.upd_server_broadcast_interval = setInterval(() => {
         let message = new Buffer.from(`Judgment Host --${this.player.name}::${this.ip}::${this.port}`);
         udp_server.send(message, 0, message.length, BROADCAST_PORT, BROADCAST_ADDR, function () {
           debug("Sent '" + message + "'");
@@ -264,10 +265,6 @@ class Game {
         }
       })
 
-      /* socket.on("played-card", (player, card) => {
-        this.io.emit("update-ui-played-card", player, card);
-      }) */
-
       socket.on("dealt-card-acknowledgement", () => {
         this.dealt_acknowledgement++;
       })
@@ -277,6 +274,11 @@ class Game {
     this.startSocketClient();
   }
 
+
+  stopUdpServer() {
+    clearInterval(this.upd_server_broadcast_interval);
+    udp_server.close();
+  }
 
   startClient() {
 
@@ -292,7 +294,7 @@ class Game {
     });
 
     udp_client.on('message', (message, rinfo) => {
-      message=message.toString();
+      message = message.toString();
       debug('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
       if (message.includes("Judgment Host")) {
         debug("Message from Judgment host");
@@ -311,6 +313,7 @@ class Game {
 
 
   }
+
 
   startSocketClient() {
 
@@ -467,6 +470,10 @@ function updateJoinedPlayersUI(players, no_players_to_be_expected_to_join) {
 
 function updateUIAfterCardDistribution(players, current_player) {
   return new Promise((resolve, reject) => {
+    $("#roundInfo").show();
+    $("#roundInfo").css('display', 'flex');
+    $("#players-stats-div").show();
+    $("#playerJoinWaitModal").modal('hide');
     let images_base = "./images/"
     let html = ``;
     players.forEach((player) => {
@@ -509,7 +516,9 @@ function waitFunction(duration) {
 
 function updateUIAfterGameJoined() {
   $("#main").load("./templates/playarea.html", function () {
-    $("#playArea").text("Waiting other players to join");
+    $("#roundInfo").hide();
+    $("#players-stats-div").hide();
+    $("#playerJoinWaitModal").modal('show');
   });
 }
 
@@ -518,10 +527,12 @@ function updateUIAndPlaceBet(player, callback) {
   $('#playerBetModal').modal('show');
   $('#playerBetModal').on('shown.bs.modal', function (e) {
     $("#noOfHandsSubmit").click(() => {
-      let no_of_hands = $("#noOfHands").val();
-      let html = `Bet-${no_of_hands},Hands-${0}`;
-      $(`#${player.name}-round-stats`).html(html);
-      callback(no_of_hands);
+      $('#playerBetModal').on('hidden.bs.modal', function () {
+        let no_of_hands = $("#noOfHands").val();
+        let html = `Bet-${no_of_hands},Hands-${0}`;
+        $(`#${player.name}-round-stats`).html(html);
+        callback(no_of_hands);
+      });
     })
   })
 }
@@ -583,16 +594,18 @@ function updateRemainingCardsOfPlayerInUI(player) {
 function updateUIAfterCardPlay(player, card, callback) {
   $(`#${player.name}-turn-table-dot`).hide();
   let images_base = "./images/"
-  let html = `<div class="single-played-card"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"></div>`;
+  let html = `<div class="single-played-card"><img src="${images_base+card.rank}_of_${card.sign}s.png" class="card-image"><h6 class="player-name-below-card">${player.name}</h6></div>`;
   $("#playedCard").append(html);
   callback();
 }
 
 
 function updateRoundInfo(round) {
+  let images_base = "./images/"
   $("#playedCard").html(``);
   let html = `
-    <h4> Round - ${round.id+1}, Trump - ${round.sign}, Total Cards - ${round.no_of_cards_at_start}</h4>`
+    <h4> Round - ${round.id+1} Trump - ${round.sign}, Total Cards - ${round.no_of_cards_at_start}</h4>`
+  // <img src="${images_base}A_of_${round.sign}s.png" align="middle">
   $("#roundInfo").html(html);
 }
 

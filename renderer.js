@@ -14,6 +14,11 @@ let this_game;
 
 
 
+$(window).keypress(function(e) {
+  if(e.keyCode==13){
+    e.preventDefault();
+  }
+});
 
 $("#main").on("click", "#startGameBtn", function () {
   $("#spinner-div").show();
@@ -57,7 +62,8 @@ $("#main").on("click", "#closeStartedGame,#closeStartedGameAfterPlayerNumbers", 
 $("#main").on("click", "#startGameAfterPlayersJoined", function () {
   $('#playersConnectModal').modal('hide');
   $('#playersConnectModal').on('hidden.bs.modal', function (e) {
-    $("#main").load("./templates/playarea.html", function () {
+    $("#main").load("./templates/playarea.html", function () {     
+      this_game.stopUdpServer();
       this_game.start();
     })
   })
