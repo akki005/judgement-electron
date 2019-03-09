@@ -13,10 +13,15 @@ ipcRenderer.on("back-to-lobby", () => {
   if (this_game) {
     this_game = null;
   }
-  $(".modal").on("hidden.bs.modal",()=>{
+  console.log($('.modal.show').length)
+  if ($('.modal.show').length>0) {
+    $(".modal").on("hidden.bs.modal", () => {
+      $("#main").load("./templates/home.html")
+    })
+    $(".modal").modal("hide");
+  } else {
     $("#main").load("./templates/home.html")
-  })
-  $(".modal").modal("hide");
+  }
 })
 
 

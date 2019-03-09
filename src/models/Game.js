@@ -15,6 +15,7 @@ var udp_server;
 var udp_client;
 let dgram = require('dgram');
 let http = require("http");
+let ip_module=require("ip");
 let os = require("os");
 let socket_io = require("socket.io");
 var socket_client = require('socket.io-client');
@@ -193,7 +194,7 @@ class Game {
 
     let connected_clients = new Map();
     let ips = os.networkInterfaces();
-    this.ip = this.remote_ip = ips.wlp4s0[0].address;
+    this.ip = this.remote_ip = ip_module.address();
 
     server = http.createServer((req, res) => {
       res.writeHead(200, {
