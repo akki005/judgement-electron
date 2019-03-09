@@ -36,12 +36,35 @@ function createWindow() {
       ]
     }])
     Menu.setApplicationMenu(menu);
+  }else{
+    var menu = Menu.buildFromTemplate([{
+      label: 'Menu',
+      submenu: [{
+          label: 'Go to Lobby',
+          click() {
+            win.webContents.send("back-to-lobby");
+          }
+        },
+        {
+          label: 'Exit',
+          click() {
+            app.quit()
+          }
+        },
+        {
+          label: 'Dev Tool',
+          role:"toggledevtools"
+        },{
+          label:"Reload",
+          role:"forcereload"
+        }
+      ]
+    }])
+    Menu.setApplicationMenu(menu);
   }
 
 
   let configs = {
-    width: 1000,
-    height: 800,
     webPreferences: {
       nodeIntegration: true
     },
@@ -52,6 +75,7 @@ function createWindow() {
 
   win = new BrowserWindow()
 
+  win.maximize()
   // and load the index.html of the app.
   win.loadFile('index.html')
 

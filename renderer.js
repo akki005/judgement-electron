@@ -13,10 +13,10 @@ ipcRenderer.on("back-to-lobby", () => {
   if (this_game) {
     this_game = null;
   }
-  $(".modal").modal("hide");
   $(".modal").on("hidden.bs.modal",()=>{
     $("#main").load("./templates/home.html")
   })
+  $(".modal").modal("hide");
 })
 
 
