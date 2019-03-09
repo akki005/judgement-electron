@@ -15,7 +15,7 @@ const {
 let _ = require("lodash");
 let dgram = require('dgram');
 let http = require("http");
-let ip_module=require("ip");
+let ip_module = require("ip");
 let os = require("os");
 let socket_io = require("socket.io");
 var socket_client = require('socket.io-client');
@@ -28,10 +28,10 @@ class Game {
 
 
   constructor() {
-    this.udp_server=undefined;
-    this.udp_client=undefined
-    this.broadcast_address=undefined;
-    this.broadcast_port=8080;
+    this.udp_server = undefined;
+    this.udp_client = undefined
+    this.broadcast_address = undefined;
+    this.broadcast_port = 8080;
     this.upd_server_broadcast_interval;
     this.hosts = [];
     this.io = undefined;
@@ -215,9 +215,18 @@ class Game {
       debug(`${constants.console_signs.check} server started on ${this.ip}:${this.port}`);
     })
 
-    this.broadcast_address=getBroadCastAddress(this.ip);
+    this.broadcast_address = getBroadCastAddress(this.ip);
 
-    this.udp_server = dgram.createSocket("udp4");
+    this.udp_server = dgram.createSocket({
+      type: 'udp4'
+    });
+
+    /* this.upd_server_broadcast_interval = setInterval(() => {
+      let message = new Buffer.from(`Judgment Host --${this.player.name}::${this.ip}::${this.port}`);
+      this.udp_server.send(message, 0, message.length, this.broadcast_port, this.broadcast_address, function () {
+        debug("Sent '" + message + "'");
+      });
+    }, 3000); */
 
     this.udp_server.bind(() => {
       this.udp_server.setBroadcast(true);
@@ -286,11 +295,10 @@ class Game {
   startClient() {
 
     this.ip = this.remote_ip = ip_module.address();
-    this.broadcast_address=getBroadCastAddress(this.ip);
+    this.broadcast_address = getBroadCastAddress(this.ip);
 
     this.udp_client = dgram.createSocket({
-      type: 'udp4',
-      reuseAddr: true
+      type: 'udp4'
     });
 
     this.udp_client.on('listening', () => {
@@ -315,7 +323,7 @@ class Game {
       }
     });
 
-    this.udp_client.bind(this.broadcast_port, this.broadcast_address);
+    this.udp_client.bind(this.broadcast_port);
 
 
   }
@@ -428,13 +436,13 @@ class Game {
     if (this.io) {
       this.io.close();
     }
-    if(server){
+    if (server) {
       server.close();
     }
-    if(this.udp_client){
+    if (this.udp_client) {
       this.udp_client.close();
     }
-    if(this.udp_server){
+    if (this.udp_server) {
       clearInterval(this.upd_server_broadcast_interval);
       this.udp_server.close();
     }
@@ -668,7 +676,7 @@ function updatePlayersStatsTableInUI(players, round_id) {
   players.forEach((player) => {
     let round_stat = player.rounds_stats.filter((round) => round.id == round_id)[0];
     $(`#${player.name}-${round_id}-row`).html(`${round_stat.points}`);
-    $(`#${player.name}-total-row`).html(`${player.total_points}`);    
+    $(`#${player.name}-total-row`).html(`${player.total_points}`);
   })
 }
 
@@ -696,8 +704,8 @@ function createPlayersStatsTableInUI(rounds, players) {
 
   let table_row_total = `<tr><td>Total</td>`;
 
-  players.forEach((player)=>{
-      table_row_total += `<td id=${player.name}-total-row></td>`;
+  players.forEach((player) => {
+    table_row_total += `<td id=${player.name}-total-row></td>`;
   })
 
   table_row_total += `</tr>`;
@@ -748,17 +756,19 @@ function restartGame() {
   $("#playersStatsModal").modal('hide');
 }
 
-function getBroadCastAddress(ip){
+function getBroadCastAddress(ip) {
   let broadcast_address;
-  let ifaces=os.networkInterfaces();
+  let ifaces = os.networkInterfaces();
 
-  Object.keys(ifaces).forEach((interface)=>{
-    let network_details=_.find(ifaces[interface],{address:ip});
-    console.log(network_details);
-    if(network_details){
-      broadcast_address=ip_module.subnet(ip,network_details.netmask).broadcastAddress;
+  Object.keys(ifaces).forEach((interface) => {
+    let network_details = _.find(ifaces[interface], {
+      address: ip
+    });
+    if (network_details) {
+      broadcast_address = ip_module.subnet(ip, network_details.netmask).broadcastAddress;
     }
   })
+  console.log(`Broadcast Address-->`, broadcast_address);
   return broadcast_address;
 }
 

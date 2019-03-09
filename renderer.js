@@ -13,11 +13,13 @@ ipcRenderer.on("back-to-lobby", () => {
   if (this_game) {
     this_game = null;
   }
-  console.log($('.modal.show').length)
-  if ($('.modal.show').length>0) {
+  let open_modals = $('.modal.show').length;
+  if (open_modals > 0) {
     $(".modal").on("hidden.bs.modal", () => {
-      $(".modal").off();
-      $("#main").load("./templates/home.html")
+      if (0 == --open_modals) {
+        $(".modal").off();
+        $("#main").load("./templates/home.html")
+      }
     })
     $(".modal").modal("hide");
   } else {
