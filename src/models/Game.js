@@ -11,8 +11,8 @@ const {
   Card
 } = require("./Card");
 
-var udp_server;
-var udp_client;
+
+let _ = require("lodash");
 let dgram = require('dgram');
 let http = require("http");
 let ip_module=require("ip");
@@ -21,9 +21,6 @@ let socket_io = require("socket.io");
 var socket_client = require('socket.io-client');
 let server = undefined;
 let portfinder = require('portfinder');
-let broadcastAddress = require("broadcast-address");
-let BROADCAST_ADDR = broadcastAddress('wlp4s0'); //-> 127.255.255.255
-let BROADCAST_PORT = 8080;
 let constants = require("../constant");
 let debug = require("debug")("JM");
 
@@ -31,6 +28,10 @@ class Game {
 
 
   constructor() {
+    this.udp_server=undefined;
+    this.udp_client=undefined
+    this.broadcast_address=undefined;
+    this.broadcast_port=8080;
     this.upd_server_broadcast_interval;
     this.hosts = [];
     this.io = undefined;
@@ -214,14 +215,15 @@ class Game {
       debug(`${constants.console_signs.check} server started on ${this.ip}:${this.port}`);
     })
 
+    this.broadcast_address=getBroadCastAddress(this.ip);
 
-    udp_server = dgram.createSocket("udp4");
+    this.udp_server = dgram.createSocket("udp4");
 
-    udp_server.bind(() => {
-      udp_server.setBroadcast(true);
+    this.udp_server.bind(() => {
+      this.udp_server.setBroadcast(true);
       this.upd_server_broadcast_interval = setInterval(() => {
         let message = new Buffer.from(`Judgment Host --${this.player.name}::${this.ip}::${this.port}`);
-        udp_server.send(message, 0, message.length, BROADCAST_PORT, BROADCAST_ADDR, function () {
+        this.udp_server.send(message, 0, message.length, this.broadcast_port, this.broadcast_address, function () {
           debug("Sent '" + message + "'");
         });
       }, 3000);
@@ -278,23 +280,26 @@ class Game {
 
   stopUdpServer() {
     clearInterval(this.upd_server_broadcast_interval);
-    udp_server.close();
+    this.udp_server.close();
   }
 
   startClient() {
 
-    udp_client = dgram.createSocket({
+    this.ip = this.remote_ip = ip_module.address();
+    this.broadcast_address=getBroadCastAddress(this.ip);
+
+    this.udp_client = dgram.createSocket({
       type: 'udp4',
       reuseAddr: true
     });
 
-    udp_client.on('listening', () => {
-      var address = udp_client.address();
+    this.udp_client.on('listening', () => {
+      var address = this.udp_client.address();
       debug(`${constants.console_signs.check} UDP Client listening on ${address.address}:${address.port}`);
-      udp_client.setBroadcast(true);
+      this.udp_client.setBroadcast(true);
     });
 
-    udp_client.on('message', (message, rinfo) => {
+    this.udp_client.on('message', (message, rinfo) => {
       message = message.toString();
       debug('Message from: ' + rinfo.address + ':' + rinfo.port + ' - ' + message);
       if (message.includes("Judgment Host")) {
@@ -305,12 +310,12 @@ class Game {
           this.hosts.push(ip)
           debug(`Judgment host name:${name},ip:${ip},port:${port}`);
           updateUIOnHostFound(name, ip, port);
-          udp_client.close();
+          this.udp_client.close();
         }
       }
     });
 
-    udp_client.bind(BROADCAST_PORT, BROADCAST_ADDR);
+    this.udp_client.bind(this.broadcast_port, this.broadcast_address);
 
 
   }
@@ -423,7 +428,16 @@ class Game {
     if (this.io) {
       this.io.close();
     }
-    server.close();
+    if(server){
+      server.close();
+    }
+    if(this.udp_client){
+      this.udp_client.close();
+    }
+    if(this.udp_server){
+      clearInterval(this.upd_server_broadcast_interval);
+      this.udp_server.close();
+    }
     console.log("killed server");
   }
 
@@ -530,6 +544,7 @@ function updateUIAndPlaceBet(player, callback) {
   $('#playerBetModal').on('shown.bs.modal', function (e) {
     $("#noOfHandsSubmit").click(() => {
       $('#playerBetModal').on('hidden.bs.modal', function () {
+        $("#playerBetModal").off();
         let no_of_hands = $("#noOfHands").val();
         let html = `Bet-${no_of_hands},Hands-${0}`;
         $(`#${player.name}-round-stats`).html(html);
@@ -732,6 +747,21 @@ function showGameStatsAtEnd(isHost) {
 function restartGame() {
   $("#playersStatsModal").modal('hide');
 }
+
+function getBroadCastAddress(ip){
+  let broadcast_address;
+  let ifaces=os.networkInterfaces();
+
+  Object.keys(ifaces).forEach((interface)=>{
+    let network_details=_.find(ifaces[interface],{address:ip});
+    console.log(network_details);
+    if(network_details){
+      broadcast_address=ip_module.subnet(ip,network_details.netmask).broadcastAddress;
+    }
+  })
+  return broadcast_address;
+}
+
 
 module.exports = {
   Game

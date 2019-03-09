@@ -16,6 +16,7 @@ ipcRenderer.on("back-to-lobby", () => {
   console.log($('.modal.show').length)
   if ($('.modal.show').length>0) {
     $(".modal").on("hidden.bs.modal", () => {
+      $(".modal").off();
       $("#main").load("./templates/home.html")
     })
     $(".modal").modal("hide");
@@ -49,6 +50,7 @@ $("#main").on("click", "#noOfPlayersSubmit", function () {
     $("#startGameAfterPlayersJoined").prop('disabled', true);
     $('#GameStartModal').modal('hide');
     $('#GameStartModal').on('hidden.bs.modal', function (e) {
+      $('#GameStartModal').off();
       $("#spinner-div").hide();
       $('#playersConnectModal').modal('show');
       $('#noOfPlayersConnected').val(this_game.players.length);
@@ -73,6 +75,7 @@ $("#main").on("click", "#closeStartedGame,#closeStartedGameAfterPlayerNumbers", 
 $("#main").on("click", "#startGameAfterPlayersJoined", function () {
   $('#playersConnectModal').modal('hide');
   $('#playersConnectModal').on('hidden.bs.modal', function (e) {
+    $('#playersConnectModal').off();
     $("#main").load("./templates/playarea.html", function () {
       this_game.stopUdpServer();
       this_game.start();
@@ -103,6 +106,7 @@ $("#main").on("click", "#joinGameSubmit", function () {
     $("#main").prop('disabled', false);
     $('#searchGameModal').modal('hide');
     $('#searchGameModal').on('hidden.bs.modal', function (e) {
+      $('#searchGameModal').off();
       this_game = new Game();
       let player_name = $('#playerNameJoinGame').val();
       let player_id = uuid();
