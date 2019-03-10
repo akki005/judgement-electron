@@ -133,8 +133,7 @@ h1 {
   /* height: 100% !important; */
 }
 
-#roundInfo,
-#showStatsHeader {
+#roundInfo {
   text-align: center;
   display: table !important;
   height: 60px;
@@ -221,6 +220,15 @@ h1 {
 
 
 #showStatsHeader {
+  text-align: center;
+  display: table !important;
+  height: 60px;
+  margin-left: 0px;
+  margin-right: 0px;
+  /* margin-bottom: 30px; */
+  /* background-color: #f5a62aed; */
+  /* border-radius: 20px; */
+  margin-top: 5px;
   border-left: solid;
   background-color: #37fbf4;
   z-index: 1100 !important;
@@ -297,4 +305,13 @@ h1 {
 #winner-info{
   margin-left: 10px;
   margin-right: 10px;
+}
+
+.round-info-img{
+  width: 30px;
+}
+
+.stats-image{
+  width: 75px;
+  height: 100%;
 }

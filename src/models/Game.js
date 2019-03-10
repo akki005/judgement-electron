@@ -631,7 +631,7 @@ function updateRoundInfo(round) {
   let images_base = "./images/"
   $("#playedCard").html(``);
   let html = `
-    <h4> Round - ${round.id+1} Trump - ${round.sign}, Total Cards - ${round.no_of_cards_at_start}</h4>`
+    <h4><img class="round-info-img" src="${images_base}${round.sign}.png"></h4>`
   // <img src="${images_base}A_of_${round.sign}s.png" align="middle">
   $("#roundInfo").html(html);
 }
