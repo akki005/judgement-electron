@@ -52,7 +52,7 @@ class Game {
   }
 
   initRoundsInfo() {
-    this.no_of_cards_at_start = 2;
+    this.no_of_cards_at_start = 10;
     this.rounds = [];
     let round = 0;
     while (this.no_of_cards_at_start != 0) {
