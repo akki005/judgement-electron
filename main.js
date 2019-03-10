@@ -2,7 +2,9 @@ const {
   app,
   BrowserWindow,
   ipcMain,
-  Menu
+  Menu,
+  Tray,
+  nativeImage
 } = require('electron');
 let path = require("path");
 
@@ -64,23 +66,30 @@ function createWindow() {
   }
 
 
+  // const appIcon = new Tray('icons/iconpng_64x64.png');
+//  / console.log(path.join(__dirname, "icons/iconpng_64x64.png"))
   let configs = {
+    show: false ,
     webPreferences: {
       nodeIntegration: true
     },
-    icon: path.join(__dirname, "icons/96x96.png")
+    icon: __dirname+"/images/A_of_spades.png"
   }
-
   configs.webPreferences.devTools = process.env.NODE_ENV == "prod" ? false : true;
 
-  win = new BrowserWindow()
+  win = new BrowserWindow(configs)
 
-  win.maximize()
   // and load the index.html of the app.
   win.loadFile('index.html')
 
   // Open the DevTools.
   //win.webContents.openDevTools()
+
+  win.maximize();
+  win.once('ready-to-show',()=>{
+    console.log("ready to show");
+    win.show();
+  })
 
   // Emitted when the window is closed.
   win.on('closed', () => {

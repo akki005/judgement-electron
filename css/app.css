@@ -1,3 +1,14 @@
+.container-fluid {
+  padding-right: 0px !important;
+  padding-left: 0px !important;
+}
+
+
+body {
+  background: url("../images/prism.png");
+}
+
+
 h1 {
   color: blue
 }
@@ -6,17 +17,24 @@ h1 {
   width: 100%;
 }
 
+#winner-div{
+  text-align: center;
+}
+
 .all-cards {
   width: 80px;
-  /* width: 10%; */
-  height: 100px;
-  padding: 0.05%;
-  margin: 0.5%;
+  height: 110px;
+  padding: 0.3%;
+  margin: 1%;
+  background: white;
+  border-radius: 3px;
 }
 
 .active-cards {
+  position: relative;
+  overflow: hidden;
   box-shadow: 5px 10px;
-  box-shadow: 1px 2px 1px 1px #8ae6a4;
+  /* box-shadow: 1px 2px 1px 1px #8ae6a4; */
 }
 
 .inactive-cards {
@@ -25,23 +43,26 @@ h1 {
 }
 
 .card-image {
-  height: 100px;
-    width: 80px;
-    border-style: solid;
+  height: 100%;
+  width: 100%;
+  /*     border-style: solid;
     border-width: 1px;
-    border-radius: 2px;
-    border-color: #0000004d;
+    border-radius: 2px; */
+  border-color: #0000004d;
 
 }
 
 .single-player-area {
-  background: #f9fffe;
-  box-shadow: 1px 2px 1px 1px #e3ece6;
-  height: 300px;
+  /* border-radius: 10px; */
+  background: #888067;
+  ;
+  /* box-shadow: 1px 2px 1px 1px #e3ece6; */
+  height: 100%;
   margin: 0px !important;
   padding-left: 2%;
   padding-right: 2%;
   padding-bottom: 2%;
+  padding-top: 2%;
 }
 
 .player-name {
@@ -50,6 +71,7 @@ h1 {
 }
 
 .playarea-row {
+  height: 350px !important;
   margin: auto;
   line-height: 0px;
   vertical-align: middle;
@@ -72,42 +94,64 @@ h1 {
 }
 
 .single-played-card {
-  height: 130px;
+  height: 110px;
   width: 80px;
   margin-left: 10px;
   margin-right: 10px;
   margin-top: 10px;
+  margin-top: 20px;
+  padding: 0.1%;
+  background: white;
+  border-radius: 3px;
 }
 
-/* #playArea{
-  height: 300px;
-} */
+.single-played-card>h6 {
+  color: #05e0fbfc;
+  font-style: italic;
+}
 
+#playArea {
+  padding-right: 0px !important;
+  padding-left: 0px !important;
+}
 
+.turn-table-col {
+  padding-right: 0px !important;
+  padding-left: 0px !important;
+}
+
+#playersTurn {
+  color: #f1f1f1;
+  background: #1f2524;
+  ;
+}
 
 #main {
   margin-left: 0px;
   margin-right: 0px;
-  height: 100%;
+  /* height: 100% !important; */
 }
 
-#roundInfo {
+#roundInfo,
+#showStatsHeader {
+  text-align: center;
+  display: table !important;
+  height: 60px;
   margin-left: 0px;
   margin-right: 0px;
-  margin-bottom: 10px;
-  background-color: #84c2f9ed;
-  border-radius: 20px;
+  /* margin-bottom: 30px; */
+  background-color: #f5a62aed;
+  /* border-radius: 20px; */
   margin-top: 5px;
 }
 
-#roundInfo > h4 {
-  margin: auto;
-  line-height: 0px;
+#roundInfo>h4 {
+  display: table-cell;
   vertical-align: middle;
 }
 
 .cards-area {
-  height: 240px;
+  /* height: 320px; */
   width: 100%;
   padding: 0px !important;
   margin: 0px !important;
@@ -127,12 +171,11 @@ h1 {
 }
 
 .play-dot {
-  color: #fd4545;
+  color: #31e813;
   margin-left: 10px;
 }
 
 .player-box-header {
-  height: 50px;
   width: 100%;
   margin: 0px !important;
 }
@@ -144,6 +187,7 @@ h1 {
 }
 
 .row {
+  /* height: fit-content !important; */
   width: 100% !important;
   margin-left: 0px !important;
   margin-right: 0px !important;
@@ -154,10 +198,12 @@ h1 {
 }
 
 .right-position-dialog {
+  margin-top: 0px;
+  margin-bottom: 0px;
   width: 300px !important;
   left: 70%;
   position: absolute !important;
-  top: 55%;
+  top: 50%;
 }
 
 /* #playerBetModalDialog{
@@ -168,6 +214,86 @@ h1 {
   z-index: 1100 !important;
 }
 
-.player-name-below-card{
+.player-name-below-card {
   text-align: center;
+}
+
+
+#showStatsHeader {
+  border-left: solid;
+  background-color: #37fbf4;
+  z-index: 1100 !important;
+  cursor: pointer;
+  transition: height 0.5s;
+}
+
+#showStatsHeader>div {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+
+@keyframes shine {
+  50% {
+    opacity: 1;
+    top: -30%;
+    left: -30%;
+    transition-property: left, top, opacity;
+    transition-duration: 0.7s, 0.7s, 0.15s;
+    transition-timing-function: ease;
+  }
+
+  100% {
+    opacity: 0;
+    top: -30%;
+    left: -30%;
+    transition-property: left, top, opacity;
+  }
+}
+
+.active-cards:after {
+  animation: shine 2s ease-in-out infinite;
+  animation-fill-mode: forwards;
+  content: "";
+  position: absolute;
+  top: -110%;
+  left: -210%;
+  width: 200%;
+  height: 200%;
+  opacity: 0;
+  transform: rotate(30deg);
+
+  background: rgba(255, 255, 255, 0.13);
+  background: linear-gradient(to right,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.13) 77%,
+    rgba(255, 255, 255, 0.5) 92%,
+    rgba(255, 255, 255, 0.0) 100%);
+}
+
+
+
+/* Hover state - trigger effect */
+
+/* .active-cards:hover:after {
+  opacity: 1;
+  top: -30%;
+  left: -30%;
+  transition-property: left, top, opacity;
+  transition-duration: 0.7s, 0.7s, 0.15s;
+  transition-timing-function: ease;
+} */
+
+/* Active state */
+
+.active-cards:active:after {
+  opacity: 0;
+}
+
+.party-image{
+  width: 50px;
+}
+#winner-info{
+  margin-left: 10px;
+  margin-right: 10px;
 }

@@ -1,17 +1,17 @@
 {
-  "name": "judgment",
-  "version": "1.1.0",
+  "name": "Judgment",
+  "version": "2.0.0",
   "description": "A card game",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=dev electron .",
     "start": "electron .",
-    "build-windows": "electron-packager . judgment --asar --platform=win32 --arch=x64 --out dist/ --overwrite",
-    "build": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite",
-    "package-debian": "electron-packager . judgment --asar --platform=linux --arch=x64 --icon=icons/256x256.png --out dist/ --overwrite && electron-installer-debian --src dist/judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --arch amd64"
+    "build-windows": "electron-packager . Judgment --asar --platform=win32 --arch=x64 --out dist/ --overwrite",
+    "build": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/A_of_spades.png --out dist/ --overwrite",
+    "package-debian": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/A_of_spades.png --out dist/ --overwrite && electron-installer-debian --src dist/Judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --icon=images/A_of_spades.png --arch amd64"
   },
-  "productName": "judgment",
+  "productName": "Judgment",
   "keywords": [],
   "author": "Akash Patel",
   "license": "ISC",
@@ -26,6 +26,8 @@
     "broadcast-address": "^1.0.2",
     "debug": "^4.1.1",
     "electron-reload": "^1.4.0",
+    "electron-store": "^2.0.0",
+    "hover.css": "^2.3.2",
     "ip": "^1.1.5",
     "jquery": "^3.3.1",
     "lodash": "^4.17.11",

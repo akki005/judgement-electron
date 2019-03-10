@@ -1,5 +1,7 @@
-<div class="row">
-  <div class="col-12" id="roundInfo"></div>
+<div class="row" id="roundinfo-header-row">
+  <div class="col-10" id="roundInfo"></div>
+  <div class="col-2 hvr-reveal" data-toggle="modal" data-target="#playersStatsModal" id="showStatsHeader">
+    <div>Stats</div></div>
 </div>
 
 <div class="row playarea-row">
@@ -10,19 +12,19 @@
 </div>
 
 <div class="row table-row">
-  <div class="col-5">
+  <div class="col-7 turn-table-col">
     <table class="table-players-stats table table-striped" id="playersTurn">
     </table>
   </div>
 </div>
 
-<div id="players-stats-div">
+<!-- <div id="players-stats-div">
   <div class="col-12">
     <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#playersStatsModal">
       Show Stats
     </button>
   </div>
-</div>
+</div> -->
 
 <div class="modal fade" id="playerBetModal" tabindex="-1" role="dialog" aria-labelledby="playerBetModalTitle"
   aria-hidden="true" data-backdrop="static" data-keyboard="false">
@@ -48,10 +50,10 @@
 </div>
 
 <div class="modal" tabindex="-1" role="dialog" id="playerWonModal" data-backdrop="static" data-keyboard="false">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog right-position-dialog" role="document">
     <div class="modal-content">
-      <div class="modal-body">
-        <p id="winner-info"></p>
+      <div class="modal-body" id="winner-div">
+          <img src="./images/party.png" class="party-image"><span id="winner-info"></span><img src="./images/party.png" class="party-image">
       </div>
     </div>
   </div>
@@ -89,5 +91,5 @@
 </div>
 
 <audio id="playerTurnNotification">
-    <source src="./audio/Popcorn.mp3" type="audio/mpeg">
+  <source src="./audio/Popcorn.mp3" type="audio/mpeg">
 </audio>

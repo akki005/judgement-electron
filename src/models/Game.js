@@ -52,7 +52,7 @@ class Game {
   }
 
   initRoundsInfo() {
-    this.no_of_cards_at_start = 10;
+    this.no_of_cards_at_start = 2;
     this.rounds = [];
     let round = 0;
     while (this.no_of_cards_at_start != 0) {
@@ -493,8 +493,8 @@ function updateJoinedPlayersUI(players, no_players_to_be_expected_to_join) {
 
 function updateUIAfterCardDistribution(players, current_player) {
   return new Promise((resolve, reject) => {
-    $("#roundInfo").show();
-    $("#roundInfo").css('display', 'flex');
+    $("#showStatsHeader").show();
+    $("#roundinfo-header-row").show();
     $("#players-stats-div").show();
     $("#playerJoinWaitModal").modal('hide');
     let images_base = "./images/"
@@ -539,7 +539,7 @@ function waitFunction(duration) {
 
 function updateUIAfterGameJoined() {
   $("#main").load("./templates/playarea.html", function () {
-    $("#roundInfo").hide();
+    $("#roundinfo-header-row").hide();
     $("#players-stats-div").hide();
     $("#playerJoinWaitModal").modal('show');
   });
@@ -643,11 +643,11 @@ function clearPlayedCardsInUI() {
 
 
 function showWinnerInfoInUI(player) {
-  $("#winner-info").html(`${player.name} won the round`);
+  $("#winner-info").html(`${player.name.toUpperCase()}`);
   $('#playerWonModal').modal('show');
   setTimeout(() => {
     $('#playerWonModal').modal('hide');
-  }, 1000)
+  }, 1500)
 }
 
 
