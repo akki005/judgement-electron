@@ -8,8 +8,8 @@
     "dev": "NODE_ENV=dev electron .",
     "start": "electron .",
     "build-windows": "electron-packager . Judgment --asar --platform=win32 --arch=x64 --icon=images/A_of_spades.ico --out dist/ --overwrite",
-    "build": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/A_of_spades.png --out dist/ --overwrite",
-    "package-debian": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/A_of_spades.png --out dist/ --overwrite && electron-installer-debian --src dist/Judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --icon=images/A_of_spades.png --arch amd64"
+    "build": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite",
+    "package-debian": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite && electron-installer-debian --src dist/Judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --icon=images/spade.png --arch amd64"
   },
   "productName": "Judgment",
   "keywords": [],

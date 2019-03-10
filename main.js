@@ -73,7 +73,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: true
     },
-    icon: __dirname+"/images/A_of_spades.png"
+    icon: __dirname+"/images/spade.png"
   }
   configs.webPreferences.devTools = process.env.NODE_ENV == "prod" ? false : true;
 
