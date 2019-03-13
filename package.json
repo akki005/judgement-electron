@@ -1,11 +1,11 @@
 {
   "name": "Judgment",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A card game",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=dev electron .",
+    "dev": "DEBUG=JM NODE_ENV=dev electron .",
     "start": "electron .",
     "build-windows": "electron-packager . Judgment --asar --platform=win32 --arch=x64 --icon=images/A_of_spades.ico --out dist/ --overwrite",
     "build": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite",
@@ -34,6 +34,6 @@
     "popper.js": "^1.14.7",
     "portfinder": "^1.0.20",
     "socket.io": "^2.2.0",
-    "uuid": "^3.3.2"
+    "uniqid": "^5.0.3"
   }
 }

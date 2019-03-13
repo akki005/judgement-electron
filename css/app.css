@@ -315,3 +315,15 @@ h1 {
   width: 75px;
   height: 100%;
 }
+
+.winner-player-card{
+  z-index: 2000 !important;
+  background: white;
+}
+#winner-div-modal-content{
+  border-radius: 90px;
+  background-color: black;
+  color: rgb(255, 255, 255);
+  font-weight: 900;
+    font-size: 20px;
+}

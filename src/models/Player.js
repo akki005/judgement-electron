@@ -1,13 +1,3 @@
-let {
-  Suit
-} = require("./Suit");
-
-let {
-  ipcMain
-} = require("electron");
-
-let game_window;
-
 module.exports.init = (win) => {
   game_window = win;
 }
