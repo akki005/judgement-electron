@@ -1,15 +1,6 @@
 let {
-  Player
-} = require("./Player");
-let {
   Hand
 } = require("./Hand");
-let {
-  ipcMain
-} = require("electron");
-
-let io = undefined;
-let connected_players_sockets = undefined;
 
 
 class Round {
@@ -34,7 +25,7 @@ class Round {
   async placeHandsBets() {
     try {
       for (const player of this.players) {
-        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.name],this.io);
+        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.id],this.io);
         player.no_of_hands_bet = parseInt(no_of_hands_bet);
       }
       return Promise.resolve()
@@ -60,7 +51,6 @@ class Round {
       this.players.forEach((player) => {
         player.arrangeCards();
       })
-      // await updateUIAfterCardDistribution(this.players);
     } catch (error) {
       return Promise.reject(error);
     }
@@ -70,12 +60,10 @@ class Round {
 
   async play() {
     try {
-      let hand_count = 0;
       /**
        * Play all hands
        */
       for (let cards = this.no_of_cards_for_each_player; cards > 0; cards--) {
-        await waitFunction(250);
         await clearPlayedCardsEvent(this.io);
         let hand = new Hand(this.players, this.rank_powers, this.trump_card, this.connected_players_sockets, this.io);
         await hand.play(this.players[0]);
@@ -84,9 +72,8 @@ class Round {
         winner_player.addHand();
         await updateWinnerInfo(winner_player,this.io);
         await updatePlayersHandEvent(this.players,this.io,this.id);
-        let player_index = this.players.findIndex((player) => player.name == winner_player.name);
+        let player_index = this.players.findIndex((player) => player.id == winner_player.id);
         leftShift(this.players, player_index);
-        hand_count++;
       }
 
       /**
@@ -137,7 +124,7 @@ function clearPlayedCardsEvent(io){
     io.emit("clear-hand");
     setTimeout(()=>{
       resolve();
-    },250);
+    },100);
   })
 }
 
@@ -154,7 +141,7 @@ function updatePlayersHandEvent(players,io,round_id){
     io.emit("update-hands-info",players,round_id);
     setTimeout(()=>{
       resolve();
-    },250);
+    },100);
   })
 }
 
@@ -163,7 +150,7 @@ function updateWinnerInfo(player,io){
     io.emit("update-winner-info",player);
     setTimeout(()=>{
       resolve();
-    },1000);
+    },1350);
   })
 }
 
@@ -194,9 +181,5 @@ function leftShift(array, shifts) {
 
 
 module.exports = {
-  Round,
-  initRoundConfigs: (socket_server_io, players_sockets) => {
-    io = socket_server_io,
-      connected_players_sockets = players_sockets;
-  }
+  Round
 }

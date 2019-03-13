@@ -1,23 +1,3 @@
-let {
-  ipcMain
-} = require("electron");
-
-let game_window;
-
-module.exports.init = (win) => {
-  game_window = win;
-}
-
-const readline = require('readline');
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-});
-
-const QUESTION_PLAY_CARD = 'Play a card';
-
-
-
 class Hand {
   constructor(players, rank_power, trump_sign, connected_players_sockets, io) {
     this.players = players;
@@ -40,19 +20,19 @@ class Hand {
 
         availability = player.getAvailableCardsToPlay(this.starting_sign);
         do {
-          card_index = await askToPlayHand(player, availability.start_index, availability.end_index, this.connected_players_sockets[player.name], this.io);
+          card_index = await askToPlayHand(player, availability.start_index, availability.end_index, this.connected_players_sockets[player.id], this.io);
         } while (card_index > availability.end_index || card_index < availability.start_index)
 
         played_card = player.playCard(card_index);
 
-        await updateRemainingCardsInUI(player,this.connected_players_sockets[player.name]);
+        await updateRemainingCardsInUI(player,this.connected_players_sockets[player.id]);
 
-        if (player.name == first_turn_player.name) {
+        if (player.id == first_turn_player.id) {
           this.starting_sign = played_card.sign;
         }
        
         this.plays.push({
-          player: player.name,
+          player_id: player.id,
           card: played_card
         });
 
@@ -70,10 +50,8 @@ class Hand {
       played_trump_cards.sort((play_current, play_next) => {
         return this.rank_power.indexOf(play_current.card.rank) - this.rank_power.indexOf(play_next.card.rank)
       })
-      // console.log(`sorted plays`,played_trump_cards);
       winner = played_trump_cards[0];
     } else if (played_trump_cards.length == 1) {
-      // console.log(`sorted plays`,played_trump_cards);
       winner = played_trump_cards[0]
     } else {
 
@@ -91,13 +69,8 @@ class Hand {
         // console.log(`sorted plays`,this.plays);
         winner = this.plays[0]
       }
-
-      /*       this.plays.sort((play_current, play_next) => {
-              return this.rank_power.indexOf(play_current.card.rank) - this.rank_power.indexOf(play_next.card.rank)
-            })
-            winner = this.plays[0] */
     }
-    this.winner = this.players.find((player) => player.name == winner.player);
+    this.winner = this.players.find((player) => player.id == winner.player_id);
     return this.winner;
   }
 

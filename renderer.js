@@ -1,7 +1,8 @@
 let {
   ipcRenderer
 } = require("electron");
-let uuid = require("uuid/v1");
+var uniqid = require('uniqid');
+let debug = require("debug")("JM");
 
 let {
   Game
@@ -45,7 +46,7 @@ $("#main").on("click", "#startGameBtn", function () {
 $("#main").on("click", "#noOfPlayersSubmit", function () {
   this_game.setNoOfPlayers($("#noOfPlayers").val());
   let player_name = $('#playerNameStartGame').val();
-  let player_id = uuid();
+  let player_id = uniqid();
   this_game.setThisClientMeta(player_name, player_id);
   this_game.startServer().then(() => {
     $("#spinner-div").hide();
@@ -111,7 +112,7 @@ $("#main").on("click", "#joinGameSubmit", function () {
       $('#searchGameModal').off();
       this_game = new Game();
       let player_name = $('#playerNameJoinGame').val();
-      let player_id = uuid();
+      let player_id = uniqid();
       let id = $('#availableGames').val();
       let ip = id.split("_")[1].trim();
       let port = id.split("_")[2].trim();
