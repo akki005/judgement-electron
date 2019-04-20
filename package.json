@@ -1,17 +1,17 @@
 {
-  "name": "Judgment",
-  "version": "3.0.0",
+  "name": "Judgement",
+  "version": "3.1.0",
   "description": "A card game",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "DEBUG=JM NODE_ENV=dev electron .",
     "start": "electron .",
-    "build-windows": "electron-packager . Judgment --asar --platform=win32 --arch=x64 --icon=images/A_of_spades.ico --out dist/ --overwrite",
-    "build": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite",
-    "package-debian": "electron-packager . Judgment --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite && electron-installer-debian --src dist/Judgment-linux-x64/ --dest /home/akash/myProjects/judgment-release/ --icon=images/spade.png --arch amd64"
+    "build-windows": "electron-packager . Judgement --asar --platform=win32 --arch=x64 --icon=images/A_of_spades.ico --out dist/ --overwrite",
+    "build": "electron-packager . Judgement --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite",
+    "package-debian": "electron-packager . Judgement --asar --platform=linux --arch=x64 --icon=images/spade.png --out dist/ --overwrite && electron-installer-debian --src dist/Judgement-linux-x64/ --dest /home/akash/myProjects/judgement-release/ --icon=images/spade.png --arch amd64"
   },
-  "productName": "Judgment",
+  "productName": "Judgement",
   "keywords": [],
   "author": "Akash Patel",
   "license": "ISC",

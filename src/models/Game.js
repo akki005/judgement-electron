@@ -26,6 +26,7 @@ class Game {
 
 
   constructor() {
+    this.client = undefined;
     this.udp_server = undefined;
     this.udp_client = undefined
     this.broadcast_address = undefined;
@@ -140,19 +141,19 @@ class Game {
   async start() {
     try {
       debug("-----Starting Game---");
-      debug("All Players",this.players);
+      debug("All Players", this.players);
       let starting_turn = 0;
       this.io.emit("create-player-stats-table", this.rounds, this.players);
       for (const round of this.rounds) {
         if (starting_turn > this.players.length - 1) {
           starting_turn = 0;
         }
-        debug("Starting Round-->",round.id);
+        debug("Starting Round-->", round.id);
         this.io.emit("round-start", round);
         await waitFunction(100);
         this.dealt_acknowledgement = 0;
         let round1 = new Round(round.id, round.sign, starting_turn, this.players, round.no_of_cards_at_start, this.ranks_power, this.connected_players_socket, this.io);
-        debug("Dealing Cards for round-->",round.id);
+        debug("Dealing Cards for round-->", round.id);
         await round1.dealCards(this.deck);
         this.io.emit("dealt-cards", this.players);
         while (this.dealt_acknowledgement != this.players.length) {
@@ -191,7 +192,7 @@ class Game {
     })
 
   }
-
+  
 
   async startServer() {
 
@@ -325,39 +326,39 @@ class Game {
 
   startSocketClient() {
 
-    let client = socket_client(this.getRemoteServerAddress());
+    this.client = socket_client(this.getRemoteServerAddress());
 
-    client.on("connect", () => {})
+    this.client.on("connect", () => {})
 
-    client.on("disconnect", () => {
+    this.client.on("disconnect", () => {
       updateUIOnHostDisconnect();
     });
 
-    client.emit("join-game", this.player);
+    this.client.emit("join-game", this.player);
 
-    client.on("dealt-cards", (players) => {
+    this.client.on("dealt-cards", (players) => {
       let current_player_data = players.filter((player) => player.id == this.player.id)[0];
-      updateUIAfterCardDistribution(players, current_player_data).then(() => client.emit("dealt-card-acknowledgement"))
+      updateUIAfterCardDistribution(players, current_player_data).then(() => this.client.emit("dealt-card-acknowledgement"))
     })
 
     if (!this.host) {
-      client.on("game-joined", () => {
+      this.client.on("game-joined", () => {
         updateUIAfterGameJoined();
       })
     }
 
-    client.on("place-bet", (player, fn) => {
+    this.client.on("place-bet", (player, fn) => {
       updateUIAndPlaceBet(player, (no_of_hands) => {
         fn(no_of_hands);
       });
     })
 
-    client.on("placing-bet", (player) => {
+    this.client.on("placing-bet", (player) => {
       updateUIWhilePlayerIsPlacingBet(player, this.player);
     })
 
 
-    client.on("play-card", ({
+    this.client.on("play-card", ({
       player,
       start_index,
       end_index
@@ -368,58 +369,58 @@ class Game {
       })
     })
 
-    client.on("update-ui-played-card", (player, card) => {
+    this.client.on("update-ui-played-card", (player, card) => {
       updateUIAfterCardPlay(player, card, () => {})
     })
 
 
-    client.on("update-remaining-card", (player, fn) => {
+    this.client.on("update-remaining-card", (player, fn) => {
       updateRemainingCardsOfPlayerInUI(player);
       fn();
     })
 
-    client.on("round-start", (round) => {
+    this.client.on("round-start", (round) => {
       updateRoundInfo(round);
     })
 
-    client.on("clear-hand", () => {
+    this.client.on("clear-hand", () => {
       clearPlayedCardsInUI();
     });
 
-    client.on("update-hands-info", (players, round_id) => {
+    this.client.on("update-hands-info", (players, round_id) => {
       updateHandsInfoInUI(players, this.player, round_id);
     })
 
-    client.on("update-winner-info", (player) => {
+    this.client.on("update-winner-info", (player) => {
       showWinnerInfoInUI(player);
     })
 
-    client.on("update-players-stats-table", (players, round_id) => {
+    this.client.on("update-players-stats-table", (players, round_id) => {
       updatePlayersStatsTableInUI(players, round_id);
     })
 
-    client.on("create-player-stats-table", (rounds, players) => {
+    this.client.on("create-player-stats-table", (rounds, players) => {
       createPlayerTurnTableInUI(rounds, players);
       createPlayersStatsTableInUI(rounds, players);
     })
 
-    client.on("placed-bet", (player, hands) => {
-      updateAllClientsUIAfterPlayerBets(player, hands);
+    this.client.on("placed-bet", (player, hands, total_hands_bet, total_card_for_round) => {
+      updateAllClientsUIAfterPlayerBets(player, hands, total_hands_bet, total_card_for_round);
     })
 
-    client.on("wait-to-play-card", (player) => {
+    this.client.on("wait-to-play-card", (player) => {
       updateTurnTableInUI(player);
     })
 
-    client.on("show-game-stats", () => {
+    this.client.on("show-game-stats", () => {
       showGameStatsAtEnd(this.host);
     })
 
-    client.on("restart-game", () => {
+    this.client.on("restart-game", () => {
       restartGame();
     })
 
-    client.on("round-end", (players) => {
+    this.client.on("round-end", (players) => {
       updateUIAfterRoundEnd(players);
     })
   }
@@ -461,10 +462,18 @@ function updateTurnTableInUI(player) {
 }
 
 
-function updateAllClientsUIAfterPlayerBets(player, hands) {
+function updateAllClientsUIAfterPlayerBets(player, hands, total_hands_bet, total_card_for_round) {
   $('#playerBetWaitModal').modal('hide');
   $(`#${player.id}-hands-bet-table`).html(hands);
   $(`#${player.id}-hands-left-table`).html(hands);
+  let hands_left=total_card_for_round - total_hands_bet;
+  if(hands_left==0){
+    $(`#total-hands-bet`).css('color','green');
+  }else{
+    $(`#total-hands-bet`).css('color','red');
+  }
+  $(`#total-hands-bet`).html(hands_left);
+
 }
 
 
@@ -497,9 +506,6 @@ function updateUIAfterCardDistribution(players, current_player) {
       if (player.id == current_player.id) {
         html += `<div id="${player.id}" class="row single-player-area">
       <div class="row player-box-header">
-      <h4 class="player-name"> ${player.name}<i class="far fa-dot-circle play-dot" id="${player.id}-play-dot"></i>
-      </h4>
-      <h4 id="${player.id}-round-stats" class="round-stats"></h4>
       </div>`
         html += `<div id="${player.id}_cards" class="row cards-area">`
         player.cards.forEach((card, index) => {
@@ -663,6 +669,7 @@ function updateUIAfterRoundEnd(players) {
     $(`#${player.id}-hands-bet-table`).html(``);
     $(`#${player.id}-hands-left-table`).html(``);
   })
+  $(`#total-hands-bet`).html(``);
 }
 
 function updatePlayersStatsTableInUI(players, round_id) {
@@ -726,6 +733,11 @@ function createPlayerTurnTableInUI(rounds, players) {
     </tr>`;
     table_body += table_row;
   })
+
+  table_body += `<tr id="total-cards">
+  <td>Total Cards - Total Bet</td><td></td><td id="total-hands-bet"></td><td></td>
+  </tr>`
+
 
   table_body += `</tbody>`;
 

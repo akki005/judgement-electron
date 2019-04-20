@@ -177,7 +177,10 @@ h1 {
 
 .player-box-header {
   width: 100%;
-  margin: 0px !important;
+  margin-bottom: 20px !important;
+  margin-top: 0px !important;
+  margin-left: 0px !important;
+  margin-right: 0px !important;
 }
 
 .round-stats {
@@ -308,7 +311,11 @@ h1 {
 }
 
 .round-info-img{
-  width: 30px;
+  width: 60px;
+  height: 60px;
+  background: white;
+  border-radius: 30px;
+  padding: 2px;
 }
 
 .stats-image{
@@ -326,4 +333,14 @@ h1 {
   color: rgb(255, 255, 255);
   font-weight: 900;
     font-size: 20px;
+}
+
+#preSelectBtn{
+  position: absolute;
+  right: 20px;
+}
+
+#playersStatsModal>div{
+  max-width: 1000px !important;
+  margin: 4.5rem auto;
 }

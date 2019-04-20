@@ -30,6 +30,9 @@ function createWindow() {
           }
         },
         {
+          label: `v${app.getVersion()}`
+        },
+        {
           label: 'Exit',
           click() {
             app.quit()
@@ -59,6 +62,8 @@ function createWindow() {
         },{
           label:"Reload",
           role:"forcereload"
+        },{
+          label: `v${app.getVersion()}`
         }
       ]
     }])

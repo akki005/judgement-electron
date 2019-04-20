@@ -16,16 +16,18 @@ class Round {
     this.no_of_players = players.length;
     this.played_cards = [];
     this.rank_powers = rank_powers;
-    this.starting_sign = undefined;
     this.stats = [];
     this.connected_players_sockets = connected_players_sockets;
     this.io = io;
+    this.total_hands_bet = 0;
   }
 
   async placeHandsBets() {
     try {
       for (const player of this.players) {
-        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.id],this.io);
+        let no_of_hands_bet = await askToPlaceBet(player, this.connected_players_sockets[player.id], this.io, this.total_hands_bet);
+        this.total_hands_bet += parseInt(no_of_hands_bet);
+        await betPlaced(player, no_of_hands_bet, this.io, this.total_hands_bet, this.no_of_cards_for_each_player);
         player.no_of_hands_bet = parseInt(no_of_hands_bet);
       }
       return Promise.resolve()
@@ -70,8 +72,8 @@ class Round {
         let winner_player = hand.getWinner();
         console.log(`$$$$$$$$$$$$$$$$$$$ Winner ${winner_player.name} $$$$$$$$$$$$$$$$$$$`);
         winner_player.addHand();
-        await updateWinnerInfo(winner_player,this.io);
-        await updatePlayersHandEvent(this.players,this.io,this.id);
+        await updateWinnerInfo(winner_player, this.io);
+        await updatePlayersHandEvent(this.players, this.io, this.id);
         let player_index = this.players.findIndex((player) => player.id == winner_player.id);
         leftShift(this.players, player_index);
       }
@@ -95,7 +97,7 @@ class Round {
           })
         }
       })
-      await updatePlayersStatsTable(this.players,this.io,this.id);
+      await updatePlayersStatsTable(this.players, this.io, this.id);
       console.log(` `);
       console.log(`:::::::::::::Round stats::::::::::::::::`);
       console.log(` `);
@@ -109,22 +111,28 @@ class Round {
 
 }
 
-function askToPlaceBet(player, socket,io) {
+function askToPlaceBet(player, socket, io, total_hands_bet) {
   return new Promise((resolve, reject) => {
     io.emit("placing-bet", player);
-    socket.emit("place-bet", player,(no_of_hands_bet)=>{
-      io.emit("placed-bet", player,no_of_hands_bet);
+    socket.emit("place-bet", player, (no_of_hands_bet) => {
       resolve(no_of_hands_bet);
     });
   })
 }
 
-function clearPlayedCardsEvent(io){
+function betPlaced(player, no_of_hands_bet, io, total_hands_bet, total_card_for_round) {
+  return new Promise((resolve, reject) => {
+    io.emit("placed-bet", player, no_of_hands_bet, total_hands_bet, total_card_for_round);
+    resolve();
+  });
+}
+
+function clearPlayedCardsEvent(io) {
   return new Promise((resolve, reject) => {
     io.emit("clear-hand");
-    setTimeout(()=>{
+    setTimeout(() => {
       resolve();
-    },100);
+    }, 100);
   })
 }
 
@@ -136,31 +144,31 @@ function waitFunction(duration) {
   })
 }
 
-function updatePlayersHandEvent(players,io,round_id){
+function updatePlayersHandEvent(players, io, round_id) {
   return new Promise((resolve, reject) => {
-    io.emit("update-hands-info",players,round_id);
-    setTimeout(()=>{
+    io.emit("update-hands-info", players, round_id);
+    setTimeout(() => {
       resolve();
-    },100);
+    }, 100);
   })
 }
 
-function updateWinnerInfo(player,io){
+function updateWinnerInfo(player, io) {
   return new Promise((resolve, reject) => {
-    io.emit("update-winner-info",player);
-    setTimeout(()=>{
+    io.emit("update-winner-info", player);
+    setTimeout(() => {
       resolve();
-    },1350);
+    }, 1350);
   })
 }
 
 
-function updatePlayersStatsTable(players,io,round_id){
+function updatePlayersStatsTable(players, io, round_id) {
   return new Promise((resolve, reject) => {
-    io.emit("update-players-stats-table",players,round_id);
-    setTimeout(()=>{
+    io.emit("update-players-stats-table", players, round_id);
+    setTimeout(() => {
       resolve();
-    },250);
+    }, 250);
   })
 }
 
