@@ -218,6 +218,7 @@ h1 {
 }
 
 .player-name-below-card {
+  word-wrap: break-word;
   text-align: center;
 }
 

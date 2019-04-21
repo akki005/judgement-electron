@@ -12,17 +12,12 @@ let this_game;
 
 ipcRenderer.on("back-to-lobby", () => {
   if (this_game) {
-    this_game = null;
+    this_game = undefined;
   }
   let open_modals = $('.modal.show').length;
   if (open_modals > 0) {
-    $(".modal").on("hidden.bs.modal", () => {
-      if (0 == --open_modals) {
-        $(".modal").off();
-        $("#main").load("./templates/home.html")
-      }
-    })
     $(".modal").modal("hide");
+    $("#main").load("./templates/home.html")
   } else {
     $("#main").load("./templates/home.html")
   }
@@ -36,7 +31,6 @@ $(window).keypress(function (e) {
 });
 
 $("#main").on("click", "#startGameBtn", function () {
-  $("#spinner-div").show();
   $("#main").prop('disabled', true);
   this_game = new Game();
   $("#main").prop('disabled', false);
@@ -49,15 +43,12 @@ $("#main").on("click", "#noOfPlayersSubmit", function () {
   let player_id = uniqid();
   this_game.setThisClientMeta(player_name, player_id);
   this_game.startServer().then(() => {
-    $("#spinner-div").hide();
     $("#startGameAfterPlayersJoined").prop('disabled', true);
     $('#GameStartModal').modal('hide');
     $('#GameStartModal').on('hidden.bs.modal', function (e) {
       $('#GameStartModal').off();
-      $("#spinner-div").hide();
       $('#playersConnectModal').modal('show');
       $('#noOfPlayersConnected').val(this_game.players.length);
-      $('#serverIp').text(`${this_game.ip}:${this_game.port}`);
     })
   });
 
@@ -68,10 +59,8 @@ $("#main").on("click", "#noOfPlayersSubmit", function () {
 
 
 $("#main").on("click", "#closeStartedGame,#closeStartedGameAfterPlayerNumbers", function () {
-
-  $("#spinner-div").hide();
   this_game.stopServer();
-  this_game = null;
+  this_game = undefined;
 })
 
 
@@ -105,7 +94,6 @@ $("#main").on("click", "#joinGameSubmit", function () {
   } else if (!game_to_join) {
     $("#availableGames").focus()
   } else {
-    $("#spinner-div").hide();
     $("#main").prop('disabled', false);
     $('#searchGameModal').modal('hide');
     $('#searchGameModal').on('hidden.bs.modal', function (e) {

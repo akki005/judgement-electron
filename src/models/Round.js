@@ -136,13 +136,6 @@ function clearPlayedCardsEvent(io) {
   })
 }
 
-function waitFunction(duration) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve();
-    }, duration)
-  })
-}
 
 function updatePlayersHandEvent(players, io, round_id) {
   return new Promise((resolve, reject) => {
